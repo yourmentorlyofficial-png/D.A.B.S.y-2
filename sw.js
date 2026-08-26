@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dabsy-smart-v1';
+const CACHE_NAME = 'dabsy-smart-v2';
 const ASSETS = [
   './index.html',
   './styles.css',
@@ -33,3 +33,4 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
