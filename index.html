@@ -5,62 +5,80 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
   >
 
   <meta name="theme-color" content="#000000">
+  <meta name="description" content="DABSy, your AI desk and study companion.">
+
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-
-  <title>DABSy</title>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon.svg">
+
   <link rel="stylesheet" href="./styles.css">
+
+  <title>DABSy</title>
 </head>
 
 <body>
 
   <main id="app">
 
-    <!-- THE ENTIRE PET FACE -->
-    <section id="face" aria-label="DABSy">
+    <section id="face" aria-label="DABSy AI companion">
+
+      <div id="ambientGlow"></div>
 
       <div id="eyes">
+
         <div class="eye" id="leftEye">
           <div class="pupil"></div>
+          <div class="eyeGlow"></div>
         </div>
 
         <div class="eye" id="rightEye">
           <div class="pupil"></div>
+          <div class="eyeGlow"></div>
         </div>
+
       </div>
 
-      <!-- Speech appears only when DABSy needs it -->
       <div id="speechArea">
-        <div id="status"></div>
-        <div id="speech"></div>
+        <div id="status">DABSy</div>
+        <div id="speech">Hello. I'm here.</div>
       </div>
 
-      <!-- Tiny hint -->
       <div id="hint">
-        tap to talk&nbsp;&nbsp;•&nbsp;&nbsp;double-tap for DABSy
+        tap to talk • double-tap for DABSy
       </div>
+
+      <div id="heart">♥</div>
+
+      <div id="touchRipple"></div>
 
     </section>
 
 
-    <!-- FLOATING MENU -->
+    <!-- FLOATING BUBBLE MENU -->
 
     <div id="bubbleMenu">
 
-      <button class="bubble studyBubble" id="studyButton">
+      <button class="bubble" id="studyButton">
         <span>📚</span>
         <small>Study</small>
       </button>
 
-      <button class="bubble settingsBubble" id="settingsButton">
+      <button class="bubble" id="settingsButton">
         <span>⚙</span>
         <small>Settings</small>
+      </button>
+
+      <button class="bubble" id="installButton">
+        <span>↓</span>
+        <small>Install</small>
       </button>
 
       <button class="bubble closeBubble" id="closeMenuButton">
@@ -78,31 +96,29 @@
 
         <div class="sheetHeader">
           <h2>DABSy</h2>
-
           <button id="closeSettings">×</button>
         </div>
 
         <p class="sheetDescription">
-          Connect DABSy to Gemini so it can think, explain and help you study.
+          DABSy uses a private AI backend.
+          Your Gemini API key is never stored inside this app.
         </p>
 
-        <label for="apiKey">
-          Gemini API key
-        </label>
+        <div class="infoCard">
 
-        <input
-          id="apiKey"
-          type="password"
-          placeholder="Paste your Gemini API key"
-          autocomplete="off"
-        >
+          <span>🔐</span>
 
-        <button class="primaryButton" id="saveApiKey">
-          Save key
-        </button>
+          <div>
+            <strong>Private AI connection</strong>
+            <small>
+              Gemini credentials stay on the secure backend.
+            </small>
+          </div>
 
-        <button class="secondaryButton" id="forgetApiKey">
-          Forget saved key
+        </div>
+
+        <button class="primaryButton" id="testConnection">
+          Test AI connection
         </button>
 
         <div class="settingStatus" id="settingStatus"></div>
@@ -116,18 +132,15 @@
 
     <div class="overlay" id="studyOverlay">
 
-      <div class="glassSheet studySheet">
+      <div class="glassSheet">
 
         <div class="sheetHeader">
-
           <h2>Study Mode</h2>
-
           <button id="closeStudy">×</button>
-
         </div>
 
         <p class="sheetDescription">
-          Tell DABSy what you want to study. You can speak naturally.
+          DABSy becomes a calm, step-by-step tutor.
         </p>
 
         <div class="studyOptions">
@@ -163,19 +176,15 @@
     </div>
 
 
-    <!-- AI ANSWER -->
+    <!-- ANSWER PANEL -->
 
     <div id="answerPanel">
 
       <div id="answerHeader">
 
-        <span id="answerTitle">
-          DABSy
-        </span>
+        <span id="answerTitle">DABSy</span>
 
-        <button id="closeAnswer">
-          ×
-        </button>
+        <button id="closeAnswer">×</button>
 
       </div>
 
@@ -183,20 +192,10 @@
 
     </div>
 
-
-    <!-- LISTENING EFFECT -->
-
-    <div id="listeningGlow"></div>
-
-    <!-- PETTING HEART -->
-
-    <div id="heart">
-      ♥
-    </div>
-
   </main>
 
-  <script type="module" src="./app.js"></script>
+
+  <script src="./app.js" defer></script>
 
 </body>
 </html>
