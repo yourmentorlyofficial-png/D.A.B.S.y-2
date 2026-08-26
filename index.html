@@ -1,165 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
   >
 
-  <meta name="theme-color" content="#020308">
-  <meta name="description" content="D.A.B.S.y - AI Desk Study Buddy">
+  <meta name="theme-color" content="#000000">
 
-  <title>D.A.B.S.y • AI Desk Buddy</title>
+  <meta
+    name="description"
+    content="D.A.B.S.y - AI Desk Study Buddy"
+  >
+
+  <title>D.A.B.S.y</title>
 
   <link rel="manifest" href="./manifest.json">
+
   <link rel="stylesheet" href="./styles.css">
 </head>
 
+
 <body>
 
-  <!-- Ambient background -->
-  <div class="ambient-aura" id="ambientAura"></div>
+  <!-- =========================================
+       DABSY WORLD
+  ========================================== -->
 
-  <!-- =========================
-       MAIN DABSY STAGE
-  ========================== -->
+  <main id="dabsyWorld">
 
-  <main class="stage">
+    <!-- subtle glow behind the face -->
+    <div
+      id="faceGlow"
+      aria-hidden="true"
+    ></div>
 
-    <!-- DABSy's face -->
-    <section class="dabsy" id="dabsy">
+
+    <!-- =======================================
+         THE FACE
+    ======================================== -->
+
+    <section
+      id="dabsyFace"
+      aria-label="DABSy"
+    >
 
       <div class="eyes">
 
-        <div class="eye-wrap">
-          <div class="eye" id="leftEye"></div>
+        <div class="eye">
+          <div class="eye-highlight"></div>
         </div>
 
-        <div class="eye-wrap">
-          <div class="eye" id="rightEye"></div>
+        <div class="eye">
+          <div class="eye-highlight"></div>
         </div>
 
       </div>
 
-      <div class="mouth" id="mouth"></div>
-
-    </section>
-
-
-    <!-- =========================
-         DIALOGUE
-    ========================== -->
-
-    <section class="dialogue">
-
-      <div class="status" id="status">
-        DABSy Online
-      </div>
-
-      <div class="speech" id="speech">
-        Hello Swagat. How can I help you today?
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         PRESENTATION PANEL
-    ========================== -->
-
-    <section
-      class="presentation-panel"
-      id="presentationPanel"
-    >
-
-      <header class="panel-header">
-
-        <div id="panelTitle">
-          DABSy
-        </div>
-
-        <button
-          id="closePanel"
-          class="close-btn"
-          aria-label="Close"
-        >
-          ×
-        </button>
-
-      </header>
 
       <div
-        id="panelContent"
-        class="panel-content"
+        id="mouth"
+        aria-hidden="true"
       ></div>
 
     </section>
 
 
-    <!-- =========================
-         CONTROLS
-    ========================== -->
+    <!-- =======================================
+         SPEECH / STATUS
+    ======================================== -->
 
-    <nav class="controls">
+    <section id="dialogue">
 
-      <button
-        id="talkButton"
-        class="talk-button"
+      <div
+        id="status"
       >
+        DABSy
+      </div>
 
-        <span id="micIcon">🎙</span>
-
-        <span id="talkText">
-          Talk to DABSy
-        </span>
-
-      </button>
-
-
-      <button
-        id="studyButton"
-        class="small-button"
-        title="Study Mode"
+      <div
+        id="speech"
       >
-        📚
-      </button>
+        Hello Swagat.
+      </div>
+
+    </section>
 
 
-      <button
-        id="settingsButton"
-        class="small-button"
-        title="Gemini Settings"
-      >
-        ⚙
-      </button>
-
-    </nav>
-
-
-    <!-- =========================
-         MODE INDICATOR
-    ========================== -->
+    <!-- =======================================
+         DOUBLE-TAP BUBBLES
+    ======================================== -->
 
     <div
-      class="mode-indicator"
-      id="modeIndicator"
+      id="bubbleMenu"
+      aria-hidden="true"
     >
-      Normal Mode
+
+      <button
+        id="studyBubble"
+        class="bubble"
+        aria-label="Study Mode"
+      >
+        <span>📚</span>
+        <small>Study</small>
+      </button>
+
+
+      <button
+        id="settingsBubble"
+        class="bubble"
+        aria-label="Settings"
+      >
+        <span>⚙️</span>
+        <small>Settings</small>
+      </button>
+
+    </div>
+
+
+    <!-- =======================================
+         HIDDEN SETTINGS
+    ======================================== -->
+
+    <div
+      id="settingsPanel"
+      class="overlay"
+    >
+
+      <div class="settings-card">
+
+        <button
+          id="closeSettings"
+          class="close-button"
+        >
+          ×
+        </button>
+
+
+        <div class="settings-title">
+          D.A.B.S.y
+        </div>
+
+        <div class="settings-subtitle">
+          Gemini brain
+        </div>
+
+
+        <label>
+          Gemini API key
+        </label>
+
+
+        <input
+          id="apiKeyInput"
+          type="password"
+          placeholder="Paste your Gemini API key"
+          autocomplete="off"
+        >
+
+
+        <button
+          id="saveKey"
+          class="save-button"
+        >
+          Connect Gemini
+        </button>
+
+
+        <div
+          id="keyStatus"
+          class="key-status"
+        ></div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =======================================
+         STUDY MODE BADGE
+    ======================================== -->
+
+    <div
+      id="studyBadge"
+    >
+      📚 STUDY MODE
+    </div>
+
+
+    <!-- =======================================
+         TOUCH HINT
+    ======================================== -->
+
+    <div
+      id="hint"
+    >
+      Tap me
     </div>
 
   </main>
 
 
-  <!-- =========================
-       SCRIPT
-  ========================== -->
-
-  <script
-    type="module"
-    src="./app.js"
-  ></script>
+  <script src="./app.js"></script>
 
 </body>
+
 </html>
