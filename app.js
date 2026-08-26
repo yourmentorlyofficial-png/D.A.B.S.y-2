@@ -41,9 +41,17 @@ const talkBtn = document.getElementById('talkBtn');
 const talkBtnText = document.getElementById('talkBtnText');
 const settingsBtn = document.getElementById('settingsBtn');
 
-// Key is stored securely in browser LocalStorage — NO SECRETS LEAKED TO GITHUB!
+// Modal Elements
+const inputModal = document.getElementById('inputModal');
+const modalTitle = document.getElementById('modalTitle');
+const modalSubtitle = document.getElementById('modalSubtitle');
+const modalInputField = document.getElementById('modalInputField');
+const modalSubmitBtn = document.getElementById('modalSubmitBtn');
+const modalCancelBtn = document.getElementById('modalCancelBtn');
+
 let geminiApiKey = localStorage.getItem('dabsy_gemini_key') || '';
 let isCornerModeActive = false;
+let modalCallback = null;
 
 window.addEventListener('DOMContentLoaded', () => {
   setMood('happy', 'DABSy Online', 'Hello Swagat, how can I help you today?');
@@ -71,7 +79,7 @@ function setMood(mood, status, dialogue) {
   } else if (mood === 'thinking') {
     leftEye.style.background = 'var(--success)';
     rightEye.style.background = 'var(--success)';
-    leftEye.style.transform = 'scale(1.15)';
+    rightEye.style.transform = 'scale(1.15)';
     mouthSmile.style.width = '20px';
     mouthSmile.style.borderColor = 'var(--success)';
     ambientAura.style.background = 'rgba(16, 185, 129, 0.5)';
@@ -102,70 +110,87 @@ function exitCornerMode() {
 
 panelCloseBtn.addEventListener('click', exitCornerMode);
 
-settingsBtn.addEventListener('click', () => {
-  const newKey = prompt('Enter your Google Gemini API Key (stored safely in your browser):', geminiApiKey);
-  if (newKey !== null) {
-    geminiApiKey = newKey.trim();
-    localStorage.setItem('dabsy_gemini_key', geminiApiKey);
-    alert(geminiApiKey ? 'API Key saved securely on your device!' : 'API Key cleared.');
-  }
-});
-
-function triggerInputFlow() {
-  if (!geminiApiKey) {
-    const key = prompt('Please enter your Google Gemini API Key (stored securely in browser):');
-    if (key) {
-      geminiApiKey = key.trim();
-      localStorage.setItem('dabsy_gemini_key', geminiApiKey);
-    } else {
-      alert('API Key is required for smart responses.');
-      return;
-    }
-  }
-
-  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-    try {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        talkBtnText.textContent = 'Listening...';
-        setMood('thinking', 'Listening...', 'I am listening...');
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript.toLowerCase();
-        talkBtnText.textContent = 'Talk to DABSy';
-        processWithGemini(transcript);
-      };
-
-      recognition.onerror = () => {
-        talkBtnText.textContent = 'Talk to DABSy';
-        fallbackToTextPrompt();
-      };
-
-      recognition.start();
-    } catch (e) {
-      fallbackToTextPrompt();
-    }
-  } else {
-    fallbackToTextPrompt();
-  }
+// Custom In-App Modal Controller (Replaces blocked mobile prompts)
+function showModal(title, subtitle, placeholder, callback) {
+  modalTitle.textContent = title;
+  modalSubtitle.textContent = subtitle;
+  modalInputField.value = '';
+  modalInputField.placeholder = placeholder;
+  inputModal.style.display = 'flex';
+  modalInputField.focus();
+  modalCallback = callback;
 }
 
-function fallbackToTextPrompt() {
-  const query = prompt('Type your study question or command for DABSy:');
-  if (query) {
-    processWithGemini(query.toLowerCase());
-  } else {
-    setMood('happy', 'DABSy Online', 'Ready when you are!');
+modalSubmitBtn.addEventListener('click', () => {
+  const val = modalInputField.value.trim();
+  inputModal.style.display = 'none';
+  if (modalCallback) modalCallback(val);
+});
+
+modalCancelBtn.addEventListener('click', () => {
+  inputModal.style.display = 'none';
+  setMood('happy', 'DABSy Online', 'Ready when you are!');
+});
+
+modalInputField.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') modalSubmitBtn.click();
+});
+
+// Settings Button
+settingsBtn.addEventListener('click', () => {
+  showModal(
+    'Gemini API Settings',
+    'Enter your Google Gemini API Key (saved securely in your browser):',
+    'Paste API Key here...',
+    (newKey) => {
+      if (newKey) {
+        geminiApiKey = newKey;
+        localStorage.setItem('dabsy_gemini_key', geminiApiKey);
+        alert('API Key saved securely on your device!');
+      } else {
+        alert('API Key cleared.');
+        localStorage.removeItem('dabsy_gemini_key');
+        geminiApiKey = '';
+      }
+    }
+  );
+});
+
+// Talk Button Trigger
+function triggerInputFlow() {
+  if (!geminiApiKey) {
+    showModal(
+      'API Key Required',
+      'Please enter your Google Gemini API Key to enable smart AI responses:',
+      'Paste API Key here...',
+      (key) => {
+        if (key) {
+          geminiApiKey = key;
+          localStorage.setItem('dabsy_gemini_key', geminiApiKey);
+          triggerInputFlow(); // Continue flow after saving
+        } else {
+          alert('API Key is required.');
+        }
+      }
+    );
+    return;
   }
+
+  showModal(
+    'Talk to DABSy',
+    'Ask any Class 11 Physics, Chemistry, Math, or Biology question:',
+    'e.g. Derive kinematic equations...',
+    (query) => {
+      if (query) {
+        processWithGemini(query.toLowerCase());
+      }
+    }
+  );
 }
 
 talkBtn.addEventListener('click', triggerInputFlow);
 
+// --- AI BRAIN INTEGRATION ---
 async function processWithGemini(userPrompt) {
   if (userPrompt.includes("i'm done") || userPrompt.includes("im done") || userPrompt.includes("done") || userPrompt.includes("close")) {
     exitCornerMode();
@@ -204,7 +229,7 @@ async function processWithGemini(userPrompt) {
     });
     stepsHTML += `
       <div class="step-card" style="text-align: center; color: var(--text-muted);">
-        Say or type "I'm done" when you are ready to return!
+        Type "I'm done" or click the close button when ready to return!
       </div>
     `;
 
