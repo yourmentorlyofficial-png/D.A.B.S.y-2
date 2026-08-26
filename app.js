@@ -41,17 +41,8 @@ const talkBtn = document.getElementById('talkBtn');
 const talkBtnText = document.getElementById('talkBtnText');
 const settingsBtn = document.getElementById('settingsBtn');
 
-// Modal Elements
-const inputModal = document.getElementById('inputModal');
-const modalTitle = document.getElementById('modalTitle');
-const modalSubtitle = document.getElementById('modalSubtitle');
-const modalInputField = document.getElementById('modalInputField');
-const modalSubmitBtn = document.getElementById('modalSubmitBtn');
-const modalCancelBtn = document.getElementById('modalCancelBtn');
-
 let geminiApiKey = localStorage.getItem('dabsy_gemini_key') || '';
 let isCornerModeActive = false;
-let modalCallback = null;
 
 window.addEventListener('DOMContentLoaded', () => {
   setMood('happy', 'DABSy Online', 'Hello Swagat, how can I help you today?');
@@ -59,7 +50,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function setMood(mood, status, dialogue) {
   companionStatus.textContent = status;
-  companionSpeech.textContent = dialogue;
+  companionSpeech.innerHTML = dialogue;
   speakText(dialogue);
 
   if (mood === 'happy') {
@@ -87,9 +78,9 @@ function setMood(mood, status, dialogue) {
 }
 
 function speakText(text) {
-  if ('speechSynthesis' in window) {
+  if ('speechSynthesis' in window && !text.includes('<input')) {
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(text.replace(/<[^>]*>?/gm, ''));
     utterance.rate = 1.05;
     window.speechSynthesis.speak(utterance);
   }
@@ -110,83 +101,52 @@ function exitCornerMode() {
 
 panelCloseBtn.addEventListener('click', exitCornerMode);
 
-function showModal(title, subtitle, placeholder, callback) {
-  modalTitle.textContent = title;
-  modalSubtitle.textContent = subtitle;
-  modalInputField.value = '';
-  modalInputField.placeholder = placeholder;
-  inputModal.style.display = 'flex';
-  modalInputField.focus();
-  modalCallback = callback;
-}
-
-modalSubmitBtn.addEventListener('click', () => {
-  const val = modalInputField.value.trim();
-  inputModal.style.display = 'none';
-  if (modalCallback) modalCallback(val);
-});
-
-modalCancelBtn.addEventListener('click', () => {
-  inputModal.style.display = 'none';
-  setMood('happy', 'DABSy Online', 'Ready when you are!');
-});
-
-modalInputField.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') modalSubmitBtn.click();
-});
-
+// Settings Key Configuration via Inline Input
 settingsBtn.addEventListener('click', () => {
-  showModal(
-    'Gemini API Settings',
-    'Enter your Google Gemini API Key (stored securely in your browser):',
-    'Paste API Key here...',
-    (newKey) => {
-      if (newKey) {
-        geminiApiKey = newKey;
+  companionStatus.textContent = 'API Key Config';
+  companionSpeech.innerHTML = `
+    <input type="text" id="inlineInput" placeholder="Paste Gemini API Key..." autofocus>
+  `;
+  const input = document.getElementById('inlineInput');
+  input.focus();
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      const val = input.value.trim();
+      if (val) {
+        geminiApiKey = val;
         localStorage.setItem('dabsy_gemini_key', geminiApiKey);
-        alert('API Key saved securely on your device!');
+        setMood('happy', 'DABSy Online', 'API Key saved successfully!');
       } else {
-        alert('API Key cleared.');
-        localStorage.removeItem('dabsy_gemini_key');
-        geminiApiKey = '';
+        setMood('happy', 'DABSy Online', 'Cancelled.');
       }
     }
-  );
+  });
 });
 
-function triggerInputFlow() {
+// Talk Button transforms the speech bubble directly into a typing bar
+talkBtn.addEventListener('click', () => {
   if (!geminiApiKey) {
-    showModal(
-      'API Key Required',
-      'Please enter your Google Gemini API Key to enable smart AI responses:',
-      'Paste API Key here...',
-      (key) => {
-        if (key) {
-          geminiApiKey = key;
-          localStorage.setItem('dabsy_gemini_key', geminiApiKey);
-          triggerInputFlow();
-        } else {
-          alert('API Key is required.');
-        }
-      }
-    );
+    settingsBtn.click();
     return;
   }
 
-  showModal(
-    'Talk to DABSy',
-    'Ask any Class 11 Physics, Chemistry, Math, or Biology question:',
-    'e.g. Explain quantum physics...',
-    (query) => {
+  companionStatus.textContent = 'Ask DABSy';
+  companionSpeech.innerHTML = `
+    <input type="text" id="inlineInput" placeholder="Ask physics, math, chemistry..." autofocus>
+  `;
+  const input = document.getElementById('inlineInput');
+  input.focus();
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      const query = input.value.trim();
       if (query) {
         processWithGemini(query.toLowerCase());
       }
     }
-  );
-}
+  });
+});
 
-talkBtn.addEventListener('click', triggerInputFlow);
-
+// --- AI BRAIN INTEGRATION ---
 async function processWithGemini(userPrompt) {
   if (userPrompt.includes("i'm done") || userPrompt.includes("im done") || userPrompt.includes("done") || userPrompt.includes("close")) {
     exitCornerMode();
@@ -233,6 +193,6 @@ async function processWithGemini(userPrompt) {
 
   } catch (error) {
     console.error(error);
-    setMood('happy', 'DABSy Online', `Error communicating with Gemini. Check your API key in settings.`);
+    setMood('happy', 'DABSy Online', `Error communicating with Gemini. Check your API key.`);
   }
 }
