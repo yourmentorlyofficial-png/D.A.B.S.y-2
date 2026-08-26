@@ -1,63 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>D.A.B.S.y</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#000000">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DABSy — Living AI Desk Companion</title>
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#000000">
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-    <!-- Full-screen DABSy Face Interface -->
-    <main id="dabsy-container" role="main" aria-label="DABSy Interface">
-        <div id="face-surface">
-            <div id="eyes-container">
-                <div class="eye left-eye">
-                    <div class="pupil"></div>
-                </div>
-                <div class="eye right-eye">
-                    <div class="pupil"></div>
-                </div>
-            </div>
-            <div id="status-indicator" aria-live="polite">Tap to speak</div>
-        </div>
-    </main>
+  <div id="installCard" class="install-banner">
+    <div>
+      <strong>Install DABSy App</strong>
+      <p style="font-size: 0.7rem; opacity: 0.9;">Add to home screen for native full-screen mode.</p>
+    </div>
+    <button id="installBtn">Install</button>
+  </div>
 
-    <!-- Floating Glass Bubbles Menu (Double Tap) -->
-    <nav id="glass-menu" class="hidden" aria-label="Quick Menu">
-        <button id="bubble-study" class="glass-bubble">
-            <span class="bubble-icon">📚</span>
-            <span class="bubble-text">Study Mode: <b id="study-status">Off</b></span>
-        </button>
-        <button id="bubble-settings" class="glass-bubble">
-            <span class="bubble-icon">⚙️</span>
-            <span class="bubble-text">Settings</span>
-        </button>
-    </nav>
-
-    <!-- Settings Modal / Overlay -->
-    <div id="settings-overlay" class="hidden" aria-hidden="true">
-        <div class="settings-card">
-            <h2>DABSy Settings</h2>
-            <div class="form-group">
-                <label for="api-key-input">Gemini API Key:</label>
-                <input type="password" id="api-key-input" placeholder="Enter your Gemini API key">
-                <small>Stored securely in your browser's local storage.</small>
-            </div>
-            <div class="form-group voice-select-group">
-                <label for="voice-select">Voice Output:</label>
-                <select id="voice-select"></select>
-            </div>
-            <div class="settings-actions">
-                <button id="save-settings" class="action-btn">Save & Close</button>
-            </div>
+  <div class="stage">
+    <!-- Living Face Component (Exact Capsule Eyes) -->
+    <div class="face-container" id="faceContainer">
+      <div class="face-features">
+        <div class="eyes-row">
+          <div class="eye" id="leftEye"></div>
+          <div class="eye" id="rightEye"></div>
         </div>
+      </div>
+      
+      <div class="companion-dialogue-box">
+        <div class="companion-status-text" id="companionStatus">DABSy Online</div>
+        <div class="companion-speech" id="companionSpeech">Hello Swagat, how can I help you today?</div>
+      </div>
     </div>
 
-    <script src="app.js"></script>
+    <!-- Study Breakdown Presentation Panel -->
+    <div class="presentation-panel" id="presentationPanel">
+      <div class="panel-header">
+        <span class="panel-title" id="panelTitle">Study Breakdown</span>
+        <button class="panel-close-btn" id="panelCloseBtn">✕</button>
+      </div>
+      <div id="panelContentArea" style="display: flex; flex-direction: column; gap: 12px;"></div>
+    </div>
+
+    <!-- Floating Control Bar -->
+    <div class="floating-control-bar">
+      <button class="action-pill primary" id="talkBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+        <span id="talkBtnText">Talk to DABSy</span>
+      </button>
+      <button class="icon-btn" id="settingsBtn" title="Gemini API Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1.45 1.92l-.41.11a2 2 0 0 0-1.15 2.52l.1.27a2 2 0 0 1-.1 1.98l-.21.36a2 2 0 0 0 .25 2.45l.18.15a2 2 0 0 1 1.05 1.75v.2a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1.45-1.92l.41-.11a2 2 0 0 0 1.15-2.52l-.1-.27a2 2 0 0 1 .1-1.98l.21-.36a2 2 0 0 0-.25-2.45l-.18-.15a2 2 0 0 1-1.05-1.75v-.2a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <script type="module" src="./app.js"></script>
 </body>
 </html>
-
