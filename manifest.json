@@ -1,10 +1,10 @@
 {
-  "name": "DABSy — AI Desk Study Buddy",
+  "name": "DABSy — Living AI Desk Companion",
   "short_name": "DABSy",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#060913",
+  "background_color": "#03050a",
   "theme_color": "#6366f1",
   "orientation": "portrait",
   "icons": [
