@@ -1,19 +1,20 @@
-// DABSy Frontend App - Secure GitHub Actions Injection Mode
+// DABSy Frontend App - Direct Client Mode
 
-const GEMINI_API_KEY = "__GEMINI_API_KEY__"; 
+const GEMINI_API_KEY = "YOUR_API_KEY_HERE"; // <-- Paste your actual Gemini API key inside these quotes!
 const MODEL_NAME = "gemini-1.5-flash";
 
 let studyMode = false;
 let isListening = false;
 let isSpeaking = false;
 
+// Speech Synthesis (DABSy talking out loud)
 function speakText(text) {
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
     
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.0;
-    utterance.pitch = 1.1;
+    utterance.pitch = 1.1; // Friendly robotic tone
     
     utterance.onstart = () => { isSpeaking = true; updateFaceState('speaking'); };
     utterance.onend = () => { isSpeaking = false; updateFaceState('idle'); };
@@ -22,9 +23,10 @@ function speakText(text) {
     window.speechSynthesis.speak(utterance);
 }
 
+// Core AI communication function talking directly to Gemini
 async function askDABSy(userMessage) {
-    if (!GEMINI_API_KEY || GEMINI_API_KEY.includes("__")) {
-        const errAlert = "API key not injected properly!";
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_API_KEY_HERE") {
+        const errAlert = "Please put your API key in app.js!";
         speakText(errAlert);
         return errAlert;
     }
@@ -43,13 +45,21 @@ async function askDABSy(userMessage) {
         
         const response = await fetch(url, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+            },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: promptText }] }]
+                contents: [
+                    {
+                        parts: [{ text: promptText }]
+                    }
+                ]
             })
         });
 
-        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
 
         const data = await response.json();
         const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm awake, but I couldn't think of anything to say!";
@@ -67,11 +77,13 @@ async function askDABSy(userMessage) {
     }
 }
 
+// Facial expression states
 function updateFaceState(state) {
     const faceEl = document.getElementById('dabsy-face') || document.body;
     faceEl.className = `dabsy-state-${state}`;
 }
 
+// Touch interactions (Single tap = listen, Double tap = toggle Study Mode)
 let lastTap = 0;
 document.addEventListener('click', (e) => {
     const currentTime = new Date().getTime();
@@ -88,6 +100,7 @@ document.addEventListener('click', (e) => {
     lastTap = currentTime;
 });
 
+// Voice Recognition / Fallback
 function startListeningSimulation() {
     isListening = true;
     updateFaceState('listening');
@@ -124,6 +137,7 @@ function fallbackTextInput() {
     }
 }
 
+// Shake detection for dizzy reaction
 window.addEventListener('devicemotion', (event) => {
     const acc = event.accelerationIncludingGravity;
     if (acc && (Math.abs(acc.x) > 25 || Math.abs(acc.y) > 25)) {
@@ -132,4 +146,4 @@ window.addEventListener('devicemotion', (event) => {
     }
 });
 
-console.log("DABSy Secret Injection Client Initialized.");
+console.log("DABSy Direct Client Initialized.");
