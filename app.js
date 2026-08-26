@@ -1,8 +1,7 @@
+// --- SERVICE WORKER & PWA INSTALL ---
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then((reg) => console.log('DABSy ServiceWorker registered:', reg.scope))
-      .catch((err) => console.error('ServiceWorker error:', err));
+    navigator.serviceWorker.register('./sw.js').catch((err) => console.error(err));
   });
 }
 
@@ -27,307 +26,180 @@ if (installBtn) {
   });
 }
 
-const navItems = document.querySelectorAll('.nav-item');
-const views = document.querySelectorAll('.view');
-
-navItems.forEach(item => {
-  item.addEventListener('click', () => {
-    const target = item.getAttribute('data-target');
-    navItems.forEach(n => n.classList.remove('active'));
-    item.classList.add('active');
-    views.forEach(v => {
-      v.classList.remove('active');
-      if (v.id === target) v.classList.add('active');
-    });
-  });
-});
-
-const themeToggle = document.getElementById('themeToggle');
-const htmlRoot = document.documentElement;
-themeToggle.addEventListener('click', () => {
-  const current = htmlRoot.getAttribute('data-theme');
-  htmlRoot.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
-});
-
+// --- LIVING ENTITY CONTROLLER ---
 const leftEye = document.getElementById('leftEye');
 const rightEye = document.getElementById('rightEye');
-const companionTitle = document.getElementById('companionTitle');
+const mouthSmile = document.getElementById('mouthSmile');
 const companionStatus = document.getElementById('companionStatus');
+const companionSpeech = document.getElementById('companionSpeech');
+const ambientAura = document.getElementById('ambientAura');
+const presentationPanel = document.getElementById('presentationPanel');
+const panelTitle = document.getElementById('panelTitle');
+const panelContentArea = document.getElementById('panelContentArea');
+const panelCloseBtn = document.getElementById('panelCloseBtn');
+const talkBtn = document.getElementById('talkBtn');
+const talkBtnText = document.getElementById('talkBtnText');
+const modeToggleBtn = document.getElementById('modeToggleBtn');
+const modeNameDisplay = document.getElementById('modeNameDisplay');
 
-function setCompanionMood(mood, statusText) {
-  companionTitle.textContent = mood;
-  companionStatus.textContent = statusText;
-  
-  if (mood === 'Deep Focus') {
+let currentMode = 'fun'; // 'fun' or 'study'
+let isCornerModeActive = false;
+
+// Wake-up Greeting Sequence on Load
+window.addEventListener('DOMContentLoaded', () => {
+  setMood('happy', 'DABSy Online', 'Hello Swagat, how can I help you today?');
+});
+
+function setMood(mood, status, dialogue) {
+  companionStatus.textContent = status;
+  companionSpeech.textContent = dialogue;
+  speakText(dialogue);
+
+  if (mood === 'happy') {
     leftEye.style.background = 'var(--primary)';
     rightEye.style.background = 'var(--primary)';
-    leftEye.style.transform = 'scaleY(0.7)';
-    rightEye.style.transform = 'scaleY(0.7)';
-  } else if (mood === 'Rest Break') {
-    leftEye.style.background = 'var(--success)';
-    rightEye.style.background = 'var(--success)';
-    leftEye.style.transform = 'scaleY(1)';
-    rightEye.style.transform = 'scaleY(1)';
-  } else if (mood === 'AI Thinking') {
+    leftEye.style.transform = 'scale(1)';
+    mouthSmile.style.width = '60px';
+    mouthSmile.style.borderColor = 'var(--primary)';
+    ambientAura.style.background = 'rgba(99, 102, 241, 0.5)';
+  } else if (mood === 'study') {
     leftEye.style.background = 'var(--accent)';
     rightEye.style.background = 'var(--accent)';
-    leftEye.style.transform = 'scale(1.1)';
-    rightEye.style.transform = 'scale(1.1)';
-  } else {
-    leftEye.style.background = 'var(--primary)';
-    rightEye.style.background = 'var(--primary)';
-    leftEye.style.transform = 'scaleY(1)';
-    rightEye.style.transform = 'scaleY(1)';
-  }
-
-  sendHardwareState(mood);
-}
-
-let stats = JSON.parse(localStorage.getItem('dabsy_stats')) || { sessions: 0, tasks: 0 };
-function updateStatsDisplay() {
-  document.getElementById('statCompleted').textContent = stats.sessions;
-  document.getElementById('statTasks').textContent = stats.tasks;
-  localStorage.setItem('dabsy_stats', JSON.stringify(stats));
-}
-updateStatsDisplay();
-
-let timerInterval;
-let timeLeft = 25 * 60;
-let isRunning = false;
-
-const timerDisplay = document.getElementById('timerDisplay');
-const timerToggleBtn = document.getElementById('timerToggleBtn');
-const timerResetBtn = document.getElementById('timerResetBtn');
-const quickTimerBtn = document.getElementById('quickTimerBtn');
-
-function formatTime(seconds) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function toggleTimer() {
-  if (isRunning) {
-    clearInterval(timerInterval);
-    isRunning = false;
-    timerToggleBtn.textContent = 'Start';
-    setCompanionMood('DABSy Online', 'Focus session paused.');
-  } else {
-    isRunning = true;
-    timerToggleBtn.textContent = 'Pause';
-    setCompanionMood('Deep Focus', 'Locking in. Distractions minimized.');
-    
-    timerInterval = setInterval(() => {
-      if (timeLeft > 0) {
-        timeLeft--;
-        timerDisplay.textContent = formatTime(timeLeft);
-      } else {
-        clearInterval(timerInterval);
-        isRunning = false;
-        timerToggleBtn.textContent = 'Start';
-        stats.sessions++;
-        updateStatsDisplay();
-        setCompanionMood('Rest Break', 'Session complete! Take a well-deserved break.');
-        alert('Pomodoro focus session completed!');
-      }
-    }, 1000);
+    leftEye.style.transform = 'scaleY(0.75)';
+    mouthSmile.style.width = '35px';
+    mouthSmile.style.borderColor = 'var(--accent)';
+    ambientAura.style.background = 'rgba(6, 182, 212, 0.5)';
+  } else if (mood === 'thinking') {
+    leftEye.style.background = 'var(--success)';
+    rightEye.style.background = 'var(--success)';
+    leftEye.style.transform = 'scale(1.15)';
+    mouthSmile.style.width = '20px';
+    mouthSmile.style.borderColor = 'var(--success)';
+    ambientAura.style.background = 'rgba(16, 185, 129, 0.5)';
   }
 }
-
-timerToggleBtn.addEventListener('click', toggleTimer);
-quickTimerBtn.addEventListener('click', () => {
-  document.querySelector('[data-target="view-tools"]').click();
-  if (!isRunning) toggleTimer();
-});
-timerResetBtn.addEventListener('click', () => {
-  clearInterval(timerInterval);
-  isRunning = false;
-  timeLeft = 25 * 60;
-  timerDisplay.textContent = formatTime(timeLeft);
-  timerToggleBtn.textContent = 'Start';
-  setCompanionMood('DABSy Online', 'Ready to assist your study session.');
-});
-
-let tasks = JSON.parse(localStorage.getItem('dabsy_tasks')) || [];
-const taskInput = document.getElementById('taskInput');
-const addTaskBtn = document.getElementById('addTaskBtn');
-const taskList = document.getElementById('taskList');
-
-function renderTasks() {
-  taskList.innerHTML = '';
-  if (tasks.length === 0) {
-    taskList.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 10px;">No pending study tasks.</p>';
-    return;
-  }
-  tasks.forEach((task, index) => {
-    const item = document.createElement('div');
-    item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: var(--bg-color); border: 1px solid var(--border); padding: 10px 12px; border-radius: 10px; font-size: 0.85rem;';
-    item.innerHTML = `
-      <span style="${task.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${task.text}</span>
-      <div style="display: flex; gap: 6px;">
-        <button onclick="toggleTask(${index})" style="background: ${task.done ? 'var(--success)' : 'transparent'}; border: 1px solid var(--border); color: white; border-radius: 6px; padding: 4px 8px; cursor: pointer;">✓</button>
-        <button onclick="deleteTask(${index})" style="background: transparent; border: 1px solid var(--border); color: var(--danger); border-radius: 6px; padding: 4px 8px; cursor: pointer;">✕</button>
-      </div>
-    `;
-    taskList.appendChild(item);
-  });
-  localStorage.setItem('dabsy_tasks', JSON.stringify(tasks));
-}
-
-window.toggleTask = function(index) {
-  tasks[index].done = !tasks[index].done;
-  if (tasks[index].done) {
-    stats.tasks++;
-    updateStatsDisplay();
-  }
-  renderTasks();
-};
-
-window.deleteTask = function(index) {
-  tasks.splice(index, 1);
-  renderTasks();
-};
-
-addTaskBtn.addEventListener('click', () => {
-  const text = taskInput.value.trim();
-  if (!text) return;
-  tasks.push({ text, done: false });
-  taskInput.value = '';
-  renderTasks();
-});
-renderTasks();
-
-const quizData = [
-  { q: "What is the powerhouse of the cell?", options: ["Nucleus", "Mitochondria", "Ribosome", "Golgi Body"], correct: 1 },
-  { q: "What is Newton's First Law also known as?", options: ["Law of Inertia", "Law of Force", "Law of Action-Reaction", "Gravitation"], correct: 0 },
-  { q: "What is the atomic number of Carbon?", options: ["5", "6", "7", "8"], correct: 1 }
-];
-let currentQuiz = 0;
-
-function loadQuiz() {
-  const qObj = quizData[currentQuiz];
-  document.getElementById('quizQuestion').textContent = `Q${currentQuiz + 1}: ${qObj.q}`;
-  const optsContainer = document.getElementById('quizOptions');
-  optsContainer.innerHTML = '';
-  qObj.options.forEach((opt, idx) => {
-    const btn = document.createElement('button');
-    btn.textContent = opt;
-    btn.style.cssText = 'background: var(--bg-color); border: 1px solid var(--border); color: var(--text-main); padding: 10px; border-radius: 10px; font-size: 0.85rem; cursor: pointer; text-align: left;';
-    btn.onclick = () => {
-      if (idx === qObj.correct) {
-        btn.style.background = 'var(--success)';
-        btn.style.color = 'white';
-        setTimeout(() => {
-          currentQuiz = (currentQuiz + 1) % quizData.length;
-          loadQuiz();
-        }, 1000);
-      } else {
-        btn.style.background = 'var(--danger)';
-        btn.style.color = 'white';
-      }
-    };
-    optsContainer.appendChild(btn);
-  });
-}
-loadQuiz();
-
-const chatInput = document.getElementById('chatInput');
-const chatSend = document.getElementById('chatSend');
-const chatMessages = document.getElementById('chatMessages');
-const voiceToggleBtn = document.getElementById('voiceToggleBtn');
 
 function speakText(text) {
   if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.0;
+    utterance.rate = 1.05;
     window.speechSynthesis.speak(utterance);
   }
 }
 
-function handleSendMessage(textOverride) {
-  const txt = textOverride || chatInput.value.trim();
-  if (!txt) return;
-
-  const userBubble = document.createElement('div');
-  userBubble.style.cssText = 'background: var(--primary); color: white; padding: 10px 14px; border-radius: 12px; font-size: 0.85rem; max-width: 85%; align-self: flex-end; margin-left: auto;';
-  userBubble.textContent = txt;
-  chatMessages.appendChild(userBubble);
-  if (!textOverride) chatInput.value = '';
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-
-  setCompanionMood('AI Thinking', 'Analyzing query...');
-
-  setTimeout(() => {
-    let reply = `I processed "${txt}". Keep up the great focus on your studies today!`;
-    if (txt.toLowerCase().includes('pomodoro')) {
-      reply = 'The Pomodoro technique uses 25 minutes of deep focus followed by a 5-minute break.';
-    } else if (txt.toLowerCase().includes('quiz')) {
-      reply = 'Check out the Quick Practice Quiz tab to test your science and math knowledge!';
-    }
-
-    const aiBubble = document.createElement('div');
-    aiBubble.style.cssText = 'background: var(--bg-color); border: 1px solid var(--border); padding: 10px 14px; border-radius: 12px; font-size: 0.85rem; max-width: 85%;';
-    aiBubble.textContent = reply;
-    chatMessages.appendChild(aiBubble);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    
-    setCompanionMood('DABSy Online', 'Ready to assist.');
-    speakText(reply);
-  }, 600);
+// --- DYNAMIC CORNER MORPHING & PRESENTATION ENGINE ---
+function enterCornerMode(title, htmlContent) {
+  isCornerModeActive = true;
+  document.body.classList.add('corner-mode');
+  panelTitle.textContent = title;
+  panelContentArea.innerHTML = htmlContent;
 }
 
-chatSend.addEventListener('click', () => handleSendMessage());
-chatInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') handleSendMessage();
-});
+function exitCornerMode() {
+  isCornerModeActive = false;
+  document.body.classList.remove('corner-mode');
+  setMood(currentMode === 'study' ? 'study' : 'happy', currentMode === 'study' ? 'Study Active' : 'Fun Pet Mode', 'Welcome back! Let me know if you need anything else.');
+}
 
+panelCloseBtn.addEventListener('click', exitCornerMode);
+
+// --- VOICE RECOGNITION & AI PROCESSING ---
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = new SpeechRecognition();
   recognition.continuous = false;
   recognition.interimResults = false;
 
-  voiceToggleBtn.addEventListener('click', () => {
-    recognition.start();
-    voiceToggleBtn.style.color = 'var(--accent)';
+  talkBtn.addEventListener('click', () => {
+    try {
+      recognition.start();
+      talkBtnText.textContent = 'Listening...';
+      setMood('thinking', 'Listening...', 'I am listening to your request, Swagat.');
+    } catch (e) {
+      console.error(e);
+    }
   });
 
   recognition.onresult = (event) => {
-    const speechToText = event.results[0][0].transcript;
-    voiceToggleBtn.style.color = 'var(--text-main)';
-    handleSendMessage(speechToText);
+    const transcript = event.results[0][0].transcript.toLowerCase();
+    talkBtnText.textContent = 'Talk to DABSy';
+    handleUserCommand(transcript);
   };
 
   recognition.onerror = () => {
-    voiceToggleBtn.style.color = 'var(--text-main)';
+    talkBtnText.textContent = 'Talk to DABSy';
+    setMood('happy', 'DABSy Online', 'Microphone error. Tap to try again.');
   };
+} else {
+  talkBtn.addEventListener('click', () => {
+    const query = prompt('Enter your question or command for DABSy:');
+    if (query) handleUserCommand(query.toLowerCase());
+  });
 }
 
-let ws;
-const wsUrlInput = document.getElementById('wsUrlInput');
-const wsConnectBtn = document.getElementById('wsConnectBtn');
+function handleUserCommand(cmd) {
+  setMood('thinking', 'Analyzing...', `Processing "${cmd}"...`);
 
-wsConnectBtn.addEventListener('click', () => {
-  const url = wsUrlInput.value.trim();
-  if (!url) return alert('Please enter a valid WebSocket URL');
-  
-  try {
-    ws = new WebSocket(url);
-    ws.onopen = () => {
-      wsConnectBtn.style.background = 'var(--primary)';
-      wsConnectBtn.textContent = 'Hardware Connected';
-      alert('Successfully linked to DABSy hardware bridge!');
-    };
-    ws.onerror = () => {
-      alert('Connection failed. Ensure ESP32/Pico W is online.');
-    };
-  } catch (err) {
-    console.error(err);
+  setTimeout(() => {
+    // Check for dismissal command
+    if (cmd.includes("i'm done") || cmd.includes("im done") || cmd.includes("done") || cmd.includes("close")) {
+      exitCornerMode();
+      return;
+    }
+
+    if (cmd.includes('study mode') || cmd.includes('switch to study')) {
+      currentMode = 'study';
+      modeNameDisplay.textContent = 'Study Mode';
+      setMood('study', 'Study Mode Active', 'Study mode engaged. Ready to break down difficult concepts step-by-step.');
+      return;
+    }
+
+    if (cmd.includes('fun mode') || cmd.includes('switch to fun')) {
+      currentMode = 'fun';
+      modeNameDisplay.textContent = 'Fun Mode';
+      setMood('happy', 'Fun Pet Mode', 'Yay! Let us chill or have some fun together.');
+      return;
+    }
+
+    // Handle Study Queries (Triggers Corner Presentation Mode)
+    if (currentMode === 'study' || cmd.includes('explain') || cmd.includes('solve') || cmd.includes('physics') || cmd.includes('math')) {
+      setMood('study', 'Explaining...', 'Breaking this down into simple steps for you.');
+      
+      let conceptTitle = "Step-by-Step Breakdown";
+      let stepsHTML = `
+        <div class="step-card">
+          <strong>Step 1: Core Definition</strong>
+          We analyze the core principles governing "${cmd}". In scientific applications, breaking terms down helps clarity.
+        </div>
+        <div class="step-card">
+          <strong>Step 2: Formula & Logic</strong>
+          Apply fundamental laws and equations cleanly without skipping algebraic steps.
+        </div>
+        <div class="step-card">
+          <strong>Step 3: Final Conclusion</strong>
+          Review the outcome to ensure full understanding. Say "Ya DABSy, I'm done" whenever you are ready to return!
+        </div>
+      `;
+
+      enterCornerMode(conceptTitle, stepsHTML);
+      speakText('Here is the step-by-step breakdown for your study session.');
+    } else {
+      // Fun Mode Casual Interaction
+      setMood('happy', 'Fun Pet Mode', `That sounds awesome! As your desktop pet, I'm always here to keep your spirits high.`);
+    }
+  }, 900);
+}
+
+// Manual Mode Toggle Button
+modeToggleBtn.addEventListener('click', () => {
+  if (currentMode === 'fun') {
+    currentMode = 'study';
+    modeNameDisplay.textContent = 'Study Mode';
+    setMood('study', 'Study Mode Active', 'Switched to Study Mode. I will present step-by-step notes.');
+  } else {
+    currentMode = 'fun';
+    modeNameDisplay.textContent = 'Fun Mode';
+    setMood('happy', 'Fun Pet Mode', 'Switched to Fun Mode. Ready to chill!');
   }
 });
-
-function sendHardwareState(mood) {
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ device: 'DABSy', state: mood, timestamp: Date.now() }));
-  }
-}
