@@ -1,15 +1,19 @@
 {
-  "name": "DABSy - AI Desk Companion",
+  "name": "DABSy",
   "short_name": "DABSy",
-  "description": "A calm AI desk and study companion.",
-  "start_url": "./index.html",
+  "description": "DABSy, your AI desk and study companion.",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#000000",
   "theme_color": "#000000",
-  "orientation": "portrait",
-  "categories": [
-    "education",
-    "productivity"
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
   ]
 }
