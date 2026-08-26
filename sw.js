@@ -1,14 +1,18 @@
-const CACHE_NAME = "dabsy-v2-clean";
+const CACHE_NAME = "dabsy-v-final";
 
-
-const ASSETS = [
+const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
-  "./manifest.json"
+  "./manifest.json",
+  "./icon.svg"
 ];
 
+
+/* =========================================
+   INSTALL
+========================================= */
 
 self.addEventListener(
   "install",
@@ -18,21 +22,26 @@ self.addEventListener(
 
       caches
         .open(CACHE_NAME)
-        .then(cache => {
-
-          return cache.addAll(
-            ASSETS
-          );
-
-        })
+        .then(
+          cache =>
+            cache.addAll(
+              APP_SHELL
+            )
+        )
+        .then(
+          () =>
+            self.skipWaiting()
+        )
 
     );
-
-    self.skipWaiting();
 
   }
 );
 
+
+/* =========================================
+   ACTIVATE
+========================================= */
 
 self.addEventListener(
   "activate",
@@ -42,68 +51,133 @@ self.addEventListener(
 
       caches
         .keys()
-        .then(keys => {
-
-          return Promise.all(
-
-            keys
-              .filter(
-                key =>
-                  key !== CACHE_NAME
-              )
-
-              .map(
-                key =>
-                  caches.delete(key)
-              )
-
-          );
-
-        })
+        .then(
+          keys =>
+            Promise.all(
+              keys
+                .filter(
+                  key =>
+                    key !== CACHE_NAME
+                )
+                .map(
+                  key =>
+                    caches.delete(key)
+                )
+            )
+        )
+        .then(
+          () =>
+            self.clients.claim()
+        )
 
     );
-
-    self.clients.claim();
 
   }
 );
 
 
+/* =========================================
+   FETCH
+========================================= */
+
 self.addEventListener(
   "fetch",
   event => {
 
+    const request =
+      event.request;
+
+    /*
+      Never cache POST requests.
+      The AI request must always reach
+      the Cloudflare Worker.
+    */
+
+    if (
+      request.method !== "GET"
+    ) {
+
+      return;
+
+    }
+
+
+    const url =
+      new URL(
+        request.url
+      );
+
+
+    /*
+      Don't interfere with external
+      Gemini / Cloudflare requests.
+    */
+
+    if (
+      url.origin !==
+      self.location.origin
+    ) {
+
+      return;
+
+    }
+
+
     event.respondWith(
 
-      fetch(event.request)
+      caches.match(
+        request
+      )
+      .then(
+        cached => {
 
-        .then(response => {
+          if (cached) {
 
-          const copy =
-            response.clone();
+            return cached;
 
-          caches
-            .open(CACHE_NAME)
-            .then(cache => {
+          }
 
-              cache.put(
-                event.request,
-                copy
-              );
 
-            });
+          return fetch(
+            request
+          )
+          .then(
+            response => {
 
-          return response;
+              if (
+                !response ||
+                response.status !== 200
+              ) {
 
-        })
+                return response;
 
-        .catch(() => {
+              }
 
-          return caches.match(
-            event.request
+
+              const copy =
+                response.clone();
+
+
+              caches
+                .open(
+                  CACHE_NAME
+                )
+                .then(
+                  cache =>
+                    cache.put(
+                      request,
+                      copy
+                    )
+                );
+
+
+              return response;
+
+            }
           );
 
-        })
+        }
+      )
 
     );
 
