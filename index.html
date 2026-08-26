@@ -19,21 +19,9 @@
     <button id="installBtn">Install</button>
   </div>
 
-  <!-- Sleek In-App Input Modal -->
-  <div class="input-modal-overlay" id="inputModal">
-    <div class="input-modal-card">
-      <h3 id="modalTitle" style="color: var(--accent); margin-bottom: 8px; font-size: 1rem;">Ask DABSy</h3>
-      <p id="modalSubtitle" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Type your question or command below:</p>
-      <input type="text" id="modalInputField" placeholder="e.g. Explain quantum physics..." autocomplete="off">
-      <div style="display: flex; gap: 10px; margin-top: 14px;">
-        <button class="action-pill primary" id="modalSubmitBtn" style="flex: 1; justify-content: center;">Submit</button>
-        <button class="action-pill" id="modalCancelBtn" style="flex: 1; justify-content: center;">Cancel</button>
-      </div>
-    </div>
-  </div>
-
   <div class="stage">
-    <div class="face-container" id="faceContainer" title="Tap to interact">
+    <!-- Living Face Component -->
+    <div class="face-container" id="faceContainer">
       <div class="face-features">
         <div class="eyes-row">
           <div class="eye" id="leftEye"></div>
@@ -43,11 +31,13 @@
       </div>
       
       <div class="companion-dialogue-box">
-        <div class="companion-status-text" id="companionStatus">DABSy Awakening...</div>
-        <div class="companion-speech" id="companionSpeech">Initializing neural core...</div>
+        <div class="companion-status-text" id="companionStatus">DABSy Online</div>
+        <!-- Speech box morphs inline into an input field when active -->
+        <div class="companion-speech" id="companionSpeech">Hello Swagat, how can I help you today?</div>
       </div>
     </div>
 
+    <!-- Study Breakdown Presentation Panel -->
     <div class="presentation-panel" id="presentationPanel">
       <div class="panel-header">
         <span class="panel-title" id="panelTitle">Study Breakdown</span>
@@ -56,6 +46,7 @@
       <div id="panelContentArea" style="display: flex; flex-direction: column; gap: 12px;"></div>
     </div>
 
+    <!-- Floating Control Bar -->
     <div class="floating-control-bar">
       <button class="action-pill primary" id="talkBtn">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
