@@ -19,7 +19,7 @@
     <button id="installBtn">Install</button>
   </div>
 
-  <!-- Sleek In-App Input Modal (Replaces blocked mobile prompts) -->
+  <!-- Sleek In-App Input Modal -->
   <div class="input-modal-overlay" id="inputModal">
     <div class="input-modal-card">
       <h3 id="modalTitle" style="color: var(--accent); margin-bottom: 8px; font-size: 1rem;">Ask DABSy</h3>
@@ -66,48 +66,6 @@
       </button>
     </div>
   </div>
-
-  <!-- Add modal CSS directly to styles or update styles.css. Let's include style patch or update styles.css -->
-  <style>
-    .input-modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(3, 5, 10, 0.85);
-      backdrop-filter: blur(12px);
-      z-index: 1000;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-    .input-modal-card {
-      background: var(--surface, #0c1220);
-      border: 1px solid var(--border, rgba(255,255,255,0.1));
-      padding: 24px;
-      border-radius: 24px;
-      width: 100%;
-      max-width: 380px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-      animation: modalFadeIn 0.3s ease;
-    }
-    @keyframes modalFadeIn {
-      from { opacity: 0; transform: translateY(10px) scale(0.95); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .input-modal-card input {
-      width: 100%;
-      background: rgba(0,0,0,0.4);
-      border: 1px solid var(--border, rgba(255,255,255,0.1));
-      border-radius: 14px;
-      padding: 12px 16px;
-      color: white;
-      font-size: 0.9rem;
-      outline: none;
-    }
-    .input-modal-card input:focus {
-      border-color: var(--accent, #06b6d4);
-    }
-  </style>
 
   <script type="module" src="./app.js"></script>
 </body>
