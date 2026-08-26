@@ -101,7 +101,7 @@ panelCloseBtn.addEventListener('click', exitCornerMode);
 
 // Settings Button to Configure Gemini API Key
 settingsBtn.addEventListener('click', () => {
-  const newKey = prompt('Enter your Google Gemini API Key (saved securely in your browser):', geminiApiKey);
+  const newKey = prompt('Enter your Google Gemini API Key (starts with AQ...):', geminiApiKey);
   if (newKey !== null) {
     geminiApiKey = newKey.trim();
     localStorage.setItem('dabsy_gemini_key', geminiApiKey);
@@ -112,7 +112,7 @@ settingsBtn.addEventListener('click', () => {
 // Input Handler (Speech or Text Prompt)
 function triggerInputFlow() {
   if (!geminiApiKey) {
-    const key = prompt('Please enter your Google Gemini API Key to enable smart AI responses:');
+    const key = prompt('Please enter your Google Gemini API Key (AQ...):');
     if (key) {
       geminiApiKey = key.trim();
       localStorage.setItem('dabsy_gemini_key', geminiApiKey);
@@ -165,7 +165,7 @@ function fallbackToTextPrompt() {
 
 talkBtn.addEventListener('click', triggerInputFlow);
 
-// --- REAL SMART GEMINI API INTEGRATION ---
+// --- REAL SMART GEMINI API INTEGRATION (Using X-goog-api-key header for AQ keys) ---
 async function processWithGemini(userPrompt) {
   if (userPrompt.includes("i'm done") || userPrompt.includes("im done") || userPrompt.includes("done") || userPrompt.includes("close")) {
     exitCornerMode();
@@ -175,9 +175,12 @@ async function processWithGemini(userPrompt) {
   setMood('thinking', 'Neural Processing...', `Thinking about "${userPrompt}"...`);
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-goog-api-key': geminiApiKey
+      },
       body: JSON.stringify({
         contents: [{
           parts: [{
@@ -193,13 +196,14 @@ async function processWithGemini(userPrompt) {
     });
 
     const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error.message || 'API Error');
+    }
+
     const rawText = data.candidates[0].content.parts[0].text;
-    
-    // Clean JSON response from markdown wrappers if present
     const cleanJsonText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
     const parsedData = JSON.parse(cleanJsonText);
 
-    // Trigger Study Mode & Corner Presentation
     setMood('study', 'Study Breakdown', parsedData.spoken_summary);
 
     let stepsHTML = '';
@@ -221,6 +225,6 @@ async function processWithGemini(userPrompt) {
 
   } catch (error) {
     console.error(error);
-    setMood('happy', 'DABSy Online', `I processed your request, but encountered a connection error. Check your API key in settings.`);
+    setMood('happy', 'DABSy Online', `Error communicating with Gemini. Check your API key in settings.`);
   }
 }
