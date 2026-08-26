@@ -1,4 +1,3 @@
-// --- SERVICE WORKER & PWA INSTALL ---
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').catch((err) => console.error(err));
@@ -26,7 +25,6 @@ if (installBtn) {
   });
 }
 
-// --- LIVING ENTITY CONTROLLER ---
 const leftEye = document.getElementById('leftEye');
 const rightEye = document.getElementById('rightEye');
 const mouthSmile = document.getElementById('mouthSmile');
@@ -42,10 +40,9 @@ const talkBtnText = document.getElementById('talkBtnText');
 const modeToggleBtn = document.getElementById('modeToggleBtn');
 const modeNameDisplay = document.getElementById('modeNameDisplay');
 
-let currentMode = 'fun'; // 'fun' or 'study'
+let currentMode = 'fun';
 let isCornerModeActive = false;
 
-// Wake-up Greeting Sequence on Load
 window.addEventListener('DOMContentLoaded', () => {
   setMood('happy', 'DABSy Online', 'Hello Swagat, how can I help you today?');
 });
@@ -88,7 +85,6 @@ function speakText(text) {
   }
 }
 
-// --- DYNAMIC CORNER MORPHING & PRESENTATION ENGINE ---
 function enterCornerMode(title, htmlContent) {
   isCornerModeActive = true;
   document.body.classList.add('corner-mode');
@@ -104,45 +100,55 @@ function exitCornerMode() {
 
 panelCloseBtn.addEventListener('click', exitCornerMode);
 
-// --- VOICE RECOGNITION & AI PROCESSING ---
-if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = new SpeechRecognition();
-  recognition.continuous = false;
-  recognition.interimResults = false;
-
-  talkBtn.addEventListener('click', () => {
+// Robust Input Handler with Text Fallback Prompt
+function triggerInputFlow() {
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     try {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        talkBtnText.textContent = 'Listening...';
+        setMood('thinking', 'Listening...', 'I am listening to your request, Swagat.');
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        talkBtnText.textContent = 'Talk to DABSy';
+        handleUserCommand(transcript);
+      };
+
+      recognition.onerror = () => {
+        talkBtnText.textContent = 'Talk to DABSy';
+        fallbackToPrompt();
+      };
+
       recognition.start();
-      talkBtnText.textContent = 'Listening...';
-      setMood('thinking', 'Listening...', 'I am listening to your request, Swagat.');
     } catch (e) {
-      console.error(e);
+      fallbackToPrompt();
     }
-  });
-
-  recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript.toLowerCase();
-    talkBtnText.textContent = 'Talk to DABSy';
-    handleUserCommand(transcript);
-  };
-
-  recognition.onerror = () => {
-    talkBtnText.textContent = 'Talk to DABSy';
-    setMood('happy', 'DABSy Online', 'Microphone error. Tap to try again.');
-  };
-} else {
-  talkBtn.addEventListener('click', () => {
-    const query = prompt('Enter your question or command for DABSy:');
-    if (query) handleUserCommand(query.toLowerCase());
-  });
+  } else {
+    fallbackToPrompt();
+  }
 }
+
+function fallbackToPrompt() {
+  const query = prompt('Type your study question or command for DABSy (e.g., "explain physics", "study mode", "i am done"):');
+  if (query) {
+    handleUserCommand(query.toLowerCase());
+  } else {
+    setMood('happy', 'DABSy Online', 'Ready when you are!');
+  }
+}
+
+talkBtn.addEventListener('click', triggerInputFlow);
 
 function handleUserCommand(cmd) {
   setMood('thinking', 'Analyzing...', `Processing "${cmd}"...`);
 
   setTimeout(() => {
-    // Check for dismissal command
     if (cmd.includes("i'm done") || cmd.includes("im done") || cmd.includes("done") || cmd.includes("close")) {
       exitCornerMode();
       return;
@@ -162,36 +168,33 @@ function handleUserCommand(cmd) {
       return;
     }
 
-    // Handle Study Queries (Triggers Corner Presentation Mode)
-    if (currentMode === 'study' || cmd.includes('explain') || cmd.includes('solve') || cmd.includes('physics') || cmd.includes('math')) {
+    if (currentMode === 'study' || cmd.includes('explain') || cmd.includes('solve') || cmd.includes('physics') || cmd.includes('math') || cmd.includes('chemistry')) {
       setMood('study', 'Explaining...', 'Breaking this down into simple steps for you.');
       
-      let conceptTitle = "Step-by-Step Breakdown";
+      let conceptTitle = `Breakdown: ${cmd}`;
       let stepsHTML = `
         <div class="step-card">
-          <strong>Step 1: Core Definition</strong>
-          We analyze the core principles governing "${cmd}". In scientific applications, breaking terms down helps clarity.
+          <strong>Step 1: Core Definition & Concept</strong>
+          Analyzing "${cmd}". We establish the foundational principles clearly and concisely.
         </div>
         <div class="step-card">
-          <strong>Step 2: Formula & Logic</strong>
-          Apply fundamental laws and equations cleanly without skipping algebraic steps.
+          <strong>Step 2: Step-by-Step Derivation</strong>
+          Applying logical formulas and step-by-step reasoning without skipping key details.
         </div>
         <div class="step-card">
-          <strong>Step 3: Final Conclusion</strong>
-          Review the outcome to ensure full understanding. Say "Ya DABSy, I'm done" whenever you are ready to return!
+          <strong>Step 3: Conclusion & Summary</strong>
+          Review complete. Say or type "Ya DABSy, I'm done" whenever you are ready to return to full screen!
         </div>
       `;
 
       enterCornerMode(conceptTitle, stepsHTML);
       speakText('Here is the step-by-step breakdown for your study session.');
     } else {
-      // Fun Mode Casual Interaction
-      setMood('happy', 'Fun Pet Mode', `That sounds awesome! As your desktop pet, I'm always here to keep your spirits high.`);
+      setMood('happy', 'Fun Pet Mode', `That sounds fun! As your desk pet, I'm right here with you.`);
     }
   }, 900);
 }
 
-// Manual Mode Toggle Button
 modeToggleBtn.addEventListener('click', () => {
   if (currentMode === 'fun') {
     currentMode = 'study';
