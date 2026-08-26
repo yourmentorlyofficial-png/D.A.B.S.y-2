@@ -1,63 +1,165 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>DABSy — Living AI Desk Companion</title>
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
+
+  <meta name="theme-color" content="#020308">
+  <meta name="description" content="D.A.B.S.y - AI Desk Study Buddy">
+
+  <title>D.A.B.S.y • AI Desk Buddy</title>
+
   <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#03050a">
   <link rel="stylesheet" href="./styles.css">
 </head>
+
 <body>
+
+  <!-- Ambient background -->
   <div class="ambient-aura" id="ambientAura"></div>
 
-  <div id="installCard" class="install-banner">
-    <div>
-      <strong>Install DABSy</strong>
-      <p style="font-size: 0.7rem; opacity: 0.9;">Add to home screen for full experience.</p>
-    </div>
-    <button id="installBtn">Install</button>
-  </div>
+  <!-- =========================
+       MAIN DABSY STAGE
+  ========================== -->
 
-  <div class="stage">
-    <!-- Living Face Component -->
-    <div class="face-container" id="faceContainer">
-      <div class="face-features">
-        <div class="eyes-row">
+  <main class="stage">
+
+    <!-- DABSy's face -->
+    <section class="dabsy" id="dabsy">
+
+      <div class="eyes">
+
+        <div class="eye-wrap">
           <div class="eye" id="leftEye"></div>
+        </div>
+
+        <div class="eye-wrap">
           <div class="eye" id="rightEye"></div>
         </div>
-        <div class="mouth-smile" id="mouthSmile"></div>
-      </div>
-      
-      <div class="companion-dialogue-box">
-        <div class="companion-status-text" id="companionStatus">DABSy Online</div>
-        <!-- Speech box morphs inline into an input field when active -->
-        <div class="companion-speech" id="companionSpeech">Hello Swagat, how can I help you today?</div>
-      </div>
-    </div>
 
-    <!-- Study Breakdown Presentation Panel -->
-    <div class="presentation-panel" id="presentationPanel">
-      <div class="panel-header">
-        <span class="panel-title" id="panelTitle">Study Breakdown</span>
-        <button class="panel-close-btn" id="panelCloseBtn">✕</button>
       </div>
-      <div id="panelContentArea" style="display: flex; flex-direction: column; gap: 12px;"></div>
-    </div>
 
-    <!-- Floating Control Bar -->
-    <div class="floating-control-bar">
-      <button class="action-pill primary" id="talkBtn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
-        <span id="talkBtnText">Talk to DABSy</span>
+      <div class="mouth" id="mouth"></div>
+
+    </section>
+
+
+    <!-- =========================
+         DIALOGUE
+    ========================== -->
+
+    <section class="dialogue">
+
+      <div class="status" id="status">
+        DABSy Online
+      </div>
+
+      <div class="speech" id="speech">
+        Hello Swagat. How can I help you today?
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         PRESENTATION PANEL
+    ========================== -->
+
+    <section
+      class="presentation-panel"
+      id="presentationPanel"
+    >
+
+      <header class="panel-header">
+
+        <div id="panelTitle">
+          DABSy
+        </div>
+
+        <button
+          id="closePanel"
+          class="close-btn"
+          aria-label="Close"
+        >
+          ×
+        </button>
+
+      </header>
+
+      <div
+        id="panelContent"
+        class="panel-content"
+      ></div>
+
+    </section>
+
+
+    <!-- =========================
+         CONTROLS
+    ========================== -->
+
+    <nav class="controls">
+
+      <button
+        id="talkButton"
+        class="talk-button"
+      >
+
+        <span id="micIcon">🎙</span>
+
+        <span id="talkText">
+          Talk to DABSy
+        </span>
+
       </button>
-      <button class="icon-btn" id="settingsBtn" title="Gemini API Settings">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1.45 1.92l-.41.11a2 2 0 0 0-1.15 2.52l.1.27a2 2 0 0 1-.1 1.98l-.21.36a2 2 0 0 0 .25 2.45l.18.15a2 2 0 0 1 1.05 1.75v.2a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1.45-1.92l.41-.11a2 2 0 0 0 1.15-2.52l-.1-.27a2 2 0 0 1 .1-1.98l.21-.36a2 2 0 0 0-.25-2.45l-.18-.15a2 2 0 0 1-1.05-1.75v-.2a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-      </button>
-    </div>
-  </div>
 
-  <script type="module" src="./app.js"></script>
+
+      <button
+        id="studyButton"
+        class="small-button"
+        title="Study Mode"
+      >
+        📚
+      </button>
+
+
+      <button
+        id="settingsButton"
+        class="small-button"
+        title="Gemini Settings"
+      >
+        ⚙
+      </button>
+
+    </nav>
+
+
+    <!-- =========================
+         MODE INDICATOR
+    ========================== -->
+
+    <div
+      class="mode-indicator"
+      id="modeIndicator"
+    >
+      Normal Mode
+    </div>
+
+  </main>
+
+
+  <!-- =========================
+       SCRIPT
+  ========================== -->
+
+  <script
+    type="module"
+    src="./app.js"
+  ></script>
+
 </body>
 </html>
