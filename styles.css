@@ -5,12 +5,13 @@
 
 html,
 body {
-  margin: 0;
   width: 100%;
   height: 100%;
+  margin: 0;
   overflow: hidden;
   background: #000;
   color: white;
+
   font-family:
     Inter,
     system-ui,
@@ -26,629 +27,946 @@ body {
 }
 
 button {
-  font: inherit;
   border: 0;
   outline: 0;
+  color: inherit;
+  font: inherit;
   cursor: pointer;
 }
 
-#app {
-  width: 100%;
-  height: 100%;
+
+/* =========================
+   BLACK WORLD
+========================= */
+
+#dabsy {
+  position: fixed;
+  inset: 0;
   background: #000;
-  position: relative;
   overflow: hidden;
 }
-
-
-/* =========================================
-   FACE
-========================================= */
 
 #face {
   position: absolute;
   inset: 0;
-  overflow: hidden;
   background: #000;
-  user-select: none;
+
   touch-action: none;
+  user-select: none;
+
+  overflow: hidden;
 }
 
-#ambientGlow {
+
+/* =========================
+   SUBTLE ATMOSPHERE
+========================= */
+
+#glow {
   position: absolute;
-  width: 65vw;
-  height: 65vw;
-  max-width: 500px;
-  max-height: 500px;
+
+  width: 380px;
+  height: 380px;
+
   left: 50%;
-  top: 44%;
+  top: 43%;
+
   transform: translate(-50%, -50%);
+
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(120, 220, 255, 0.065),
-    rgba(0, 0, 0, 0) 68%
-  );
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(50,210,255,.055),
+      transparent 68%
+    );
+
   filter: blur(25px);
+
   transition:
-    opacity 0.7s ease,
-    transform 0.7s ease;
-  pointer-events: none;
+    transform .8s ease,
+    opacity .8s ease;
 }
+
+
+/* =========================
+   EYES
+========================= */
 
 #eyes {
   position: absolute;
+
   left: 50%;
-  top: 42%;
+  top: 41%;
+
   transform: translate(-50%, -50%);
-  width: min(74vw, 390px);
-  height: min(30vw, 155px);
+
+  width: min(72vw, 330px);
+  height: 145px;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: transform 0.4s ease;
+
+  transition:
+    transform .35s cubic-bezier(.2,.8,.2,1);
 }
+
+
+/*
+   The eyes are deliberately
+   much smaller than the
+   previous version.
+*/
 
 .eye {
   position: relative;
-  width: 34%;
-  height: 78%;
-  border-radius: 48% 48% 42% 42%;
+
+  width: 94px;
+  height: 112px;
+
+  border-radius:
+    48% 48%
+    43% 43%;
+
   background:
     radial-gradient(
-      circle at 50% 48%,
+      ellipse at 50% 42%,
       #ffffff 0%,
-      #dffaff 20%,
-      #8deaff 45%,
-      #4dd7ff 67%,
-      #1597c9 100%
+      #dffbff 17%,
+      #82e7ff 43%,
+      #39cfff 70%,
+      #0b6f9b 100%
     );
+
   box-shadow:
-    0 0 12px rgba(115, 230, 255, 0.8),
-    0 0 35px rgba(70, 200, 255, 0.45),
-    0 0 80px rgba(30, 160, 255, 0.18);
+    0 0 12px rgba(80,220,255,.9),
+    0 0 30px rgba(60,210,255,.48),
+    0 0 65px rgba(40,170,255,.18);
+
+  overflow: hidden;
+
   transform-origin: center;
-  will-change: transform;
+
   transition:
-    transform 0.28s cubic-bezier(.2,.8,.2,1),
-    height 0.22s ease,
-    border-radius 0.22s ease,
-    filter 0.3s ease;
+    transform .3s cubic-bezier(.2,.8,.2,1),
+    height .22s ease,
+    border-radius .22s ease,
+    filter .25s ease;
 }
+
+
+/* iris depth */
+
+.iris {
+  position: absolute;
+
+  width: 60%;
+  height: 60%;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      #00131b 0%,
+      #00131b 43%,
+      #052a36 58%,
+      #0d718d 75%,
+      transparent 76%
+    );
+}
+
+
+/* pupil */
 
 .pupil {
   position: absolute;
+
+  width: 35px;
+  height: 35px;
+
   left: 50%;
   top: 50%;
-  width: 42%;
-  height: 42%;
+
   transform: translate(-50%, -50%);
+
   border-radius: 50%;
-  background: #001017;
+
+  background: #000b10;
+
   box-shadow:
-    inset 0 0 5px rgba(255,255,255,.35),
-    0 0 8px rgba(0,0,0,.9);
+    inset 0 0 7px rgba(255,255,255,.25),
+    0 0 7px rgba(0,0,0,.9);
+
   transition:
-    transform 0.32s cubic-bezier(.2,.8,.2,1);
+    transform .28s cubic-bezier(.2,.8,.2,1);
 }
 
-.eyeGlow {
+
+/* tiny eye reflection */
+
+.shine {
   position: absolute;
-  inset: -15%;
-  border-radius: inherit;
-  background: transparent;
-  box-shadow: 0 0 35px rgba(80, 220, 255, .16);
+
+  width: 11px;
+  height: 11px;
+
+  left: 34%;
+  top: 30%;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,.85);
+
+  filter: blur(1px);
+
   pointer-events: none;
 }
 
 
-/* =========================================
+/* =========================
    SPEECH
-========================================= */
+========================= */
 
-#speechArea {
+#speechBox {
   position: absolute;
-  left: 50%;
-  bottom: 16%;
+
   width: min(88vw, 600px);
-  transform: translateX(-50%);
+
+  left: 50%;
+  bottom: 14%;
+
+  transform:
+    translateX(-50%)
+    translateY(8px);
+
   text-align: center;
-  pointer-events: none;
+
   opacity: 0;
+
+  pointer-events: none;
+
   transition:
     opacity .35s ease,
     transform .35s ease;
 }
 
+#face.speaking #speechBox,
+#face.listening #speechBox,
+#face.thinking #speechBox,
+#face.showSpeech #speechBox {
+  opacity: 1;
+
+  transform:
+    translateX(-50%)
+    translateY(0);
+}
+
 #status {
-  font-size: 10px;
-  letter-spacing: .25em;
+  font-size: 9px;
+
+  letter-spacing: .28em;
+
   text-transform: uppercase;
-  opacity: .48;
+
+  opacity: .42;
+
   margin-bottom: 7px;
 }
 
 #speech {
-  font-size: clamp(15px, 4vw, 20px);
+  font-size: clamp(14px, 4vw, 19px);
+
   line-height: 1.45;
+
   color: rgba(255,255,255,.88);
-  text-shadow: 0 0 20px rgba(100,220,255,.18);
+
+  text-shadow:
+    0 0 22px rgba(90,220,255,.18);
 }
 
-#face.showSpeech #speechArea {
-  opacity: 1;
-  transform: translateX(-50%) translateY(-4px);
-}
+
+/* =========================
+   HINT
+========================= */
 
 #hint {
   position: absolute;
-  bottom: 5%;
+
   left: 50%;
+  bottom: 5%;
+
   transform: translateX(-50%);
-  font-size: 10px;
-  letter-spacing: .12em;
-  color: rgba(255,255,255,.22);
-  text-align: center;
+
   white-space: nowrap;
-  pointer-events: none;
-  transition: opacity .5s ease;
+
+  font-size: 9px;
+
+  letter-spacing: .13em;
+
+  color: rgba(255,255,255,.19);
+
+  transition:
+    opacity .4s ease;
 }
 
-#face.active #hint {
+#face.listening #hint,
+#face.thinking #hint,
+#face.speaking #hint {
   opacity: 0;
 }
 
 
-/* =========================================
+/* =========================
+   LIVING ANIMATIONS
+========================= */
+
+#face.idle #glow {
+  animation:
+    breathe 4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+
+  0%,
+  100% {
+    transform:
+      translate(-50%, -50%)
+      scale(.92);
+
+    opacity: .65;
+  }
+
+  50% {
+    transform:
+      translate(-50%, -50%)
+      scale(1.08);
+
+    opacity: 1;
+  }
+}
+
+
+/* happy */
+
+#face.happy .eye {
+  height: 62px;
+
+  border-radius:
+    48%
+    48%
+    72%
+    72%;
+}
+
+
+/* listening */
+
+#face.listening .eye {
+  transform: scale(1.08);
+
+  filter: brightness(1.15);
+}
+
+
+/* thinking */
+
+#face.thinking #eyes {
+  transform:
+    translate(-50%, -50%)
+    rotate(-2deg);
+}
+
+#face.thinking .eye:first-child {
+  transform:
+    translateY(-5px);
+}
+
+#face.thinking .eye:last-child {
+  transform:
+    translateY(5px);
+}
+
+
+/* excited */
+
+#face.excited .eye {
+  transform: scale(1.1);
+}
+
+
+/* confused */
+
+#face.confused .eye:first-child {
+  transform: rotate(8deg);
+}
+
+#face.confused .eye:last-child {
+  transform: rotate(-6deg);
+}
+
+
+/* dizzy */
+
+#face.dizzy #eyes {
+  animation:
+    dizzy .42s ease-in-out infinite;
+}
+
+@keyframes dizzy {
+
+  0% {
+    transform:
+      translate(-50%, -50%)
+      rotate(-7deg);
+  }
+
+  50% {
+    transform:
+      translate(-50%, -50%)
+      rotate(7deg);
+  }
+
+  100% {
+    transform:
+      translate(-50%, -50%)
+      rotate(-7deg);
+  }
+}
+
+
+/* shake */
+
+#face.shaking {
+  animation:
+    shake .45s ease;
+}
+
+@keyframes shake {
+
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-10px); }
+  40% { transform: translateX(10px); }
+  60% { transform: translateX(-7px); }
+  80% { transform: translateX(7px); }
+  100% { transform: translateX(0); }
+
+}
+
+
+/* =========================
    HEART
-========================================= */
+========================= */
 
 #heart {
   position: absolute;
+
   left: 50%;
-  top: 44%;
-  transform: translate(-50%, -50%) scale(0);
-  font-size: 25px;
-  color: #fff;
-  text-shadow:
-    0 0 10px #8deaff,
-    0 0 35px #4dd7ff;
+  top: 42%;
+
+  transform:
+    translate(-50%, -50%)
+    scale(0);
+
   opacity: 0;
+
+  font-size: 25px;
+
+  text-shadow:
+    0 0 12px #8eeaff,
+    0 0 35px #3dd8ff;
+
   pointer-events: none;
 }
 
 #heart.pop {
-  animation: heartPop .7s ease forwards;
+  animation:
+    heart .8s ease forwards;
 }
 
-@keyframes heartPop {
+@keyframes heart {
+
   0% {
-    transform: translate(-50%, -50%) scale(0);
+    transform:
+      translate(-50%, -50%)
+      scale(0);
+
     opacity: 0;
   }
 
-  35% {
-    transform: translate(-50%, -80%) scale(1.25);
+  30% {
+    transform:
+      translate(-50%, -100%)
+      scale(1.2);
+
     opacity: 1;
   }
 
   100% {
-    transform: translate(-50%, -145%) scale(.6);
+    transform:
+      translate(-50%, -170%)
+      scale(.5);
+
     opacity: 0;
   }
 }
 
 
-/* =========================================
-   LIVING STATES
-========================================= */
+/* =========================
+   BUBBLES
+========================= */
 
-body.state-listening #ambientGlow {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1.12);
-}
-
-body.state-listening .eye {
-  filter: brightness(1.15);
-}
-
-body.state-thinking .eye {
-  filter: brightness(.92);
-}
-
-body.state-speaking #ambientGlow {
-  animation: breathingGlow 1.4s ease-in-out infinite;
-}
-
-body.state-happy .eye {
-  border-radius: 50% 50% 65% 65%;
-}
-
-body.state-excited .eye {
-  transform: scale(1.12);
-}
-
-body.state-dizzy #eyes {
-  animation: dizzyEyes .45s ease-in-out infinite;
-}
-
-body.state-shaken #face {
-  animation: shakeFace .5s ease;
-}
-
-@keyframes breathingGlow {
-  0%, 100% {
-    opacity: .6;
-    transform: translate(-50%, -50%) scale(.96);
-  }
-
-  50% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.08);
-  }
-}
-
-@keyframes dizzyEyes {
-  0% { transform: translate(-50%, -50%) rotate(-5deg); }
-  50% { transform: translate(-50%, -50%) rotate(5deg); }
-  100% { transform: translate(-50%, -50%) rotate(-5deg); }
-}
-
-@keyframes shakeFace {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(-12px); }
-  40% { transform: translateX(11px); }
-  60% { transform: translateX(-8px); }
-  80% { transform: translateX(7px); }
-  100% { transform: translateX(0); }
-}
-
-
-/* =========================================
-   BUBBLE MENU
-========================================= */
-
-#bubbleMenu {
+#menu {
   position: absolute;
   inset: 0;
+
   pointer-events: none;
+
   z-index: 20;
 }
 
 .bubble {
   position: absolute;
-  width: 72px;
-  height: 72px;
+
+  width: 68px;
+  height: 68px;
+
   border-radius: 50%;
-  background: rgba(255,255,255,.075);
-  border: 1px solid rgba(255,255,255,.14);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  color: white;
+
   display: flex;
   flex-direction: column;
-  align-items: center;
+
   justify-content: center;
-  gap: 3px;
+  align-items: center;
+
+  background:
+    rgba(255,255,255,.075);
+
+  border:
+    1px solid rgba(255,255,255,.13);
+
+  backdrop-filter:
+    blur(18px);
+
+  -webkit-backdrop-filter:
+    blur(18px);
+
   box-shadow:
-    0 12px 35px rgba(0,0,0,.45),
+    0 15px 40px rgba(0,0,0,.5),
     inset 0 0 20px rgba(255,255,255,.025);
+
   opacity: 0;
-  transform: scale(.4);
+
   pointer-events: none;
+
+  transform: scale(.3);
+
   transition:
-    opacity .35s ease,
+    opacity .3s ease,
     transform .45s cubic-bezier(.16,1,.3,1);
 }
 
 .bubble span {
-  font-size: 23px;
+  font-size: 21px;
 }
 
 .bubble small {
-  font-size: 9px;
-  opacity: .65;
+  font-size: 8px;
+  opacity: .6;
 }
 
-.studyBubble {
+#studyBubble {
   left: 50%;
-  top: 31%;
-  transform: translate(-50%, 30px) scale(.4);
+  top: 29%;
+  transform:
+    translate(-50%, 30px)
+    scale(.3);
 }
 
-.settingsBubble {
-  left: 26%;
-  top: 44%;
-  transform: translate(0, 20px) scale(.4);
+#settingsBubble {
+  left: 19%;
+  top: 43%;
+  transform:
+    translateY(20px)
+    scale(.3);
 }
 
-.installBubble {
-  right: 26%;
-  top: 44%;
-  transform: translate(0, 20px) scale(.4);
+#installBubble {
+  right: 19%;
+  top: 43%;
+  transform:
+    translateY(20px)
+    scale(.3);
 }
 
-.closeBubble {
+#closeBubble {
   left: 50%;
-  top: 57%;
+  top: 56%;
   width: 52px;
   height: 52px;
-  transform: translate(-50%, 20px) scale(.4);
+
+  font-size: 25px;
+
+  transform:
+    translate(-50%, 20px)
+    scale(.3);
 }
 
-.closeBubble span {
-  font-size: 27px;
-}
-
-body.menu-open .bubble {
+body.menuOpen .bubble {
   opacity: 1;
   pointer-events: auto;
 }
 
-body.menu-open .studyBubble {
-  transform: translate(-50%, 0) scale(1);
+body.menuOpen #studyBubble {
+  transform:
+    translate(-50%, 0)
+    scale(1);
 }
 
-body.menu-open .settingsBubble {
-  transform: translate(0, 0) scale(1);
+body.menuOpen #settingsBubble {
+  transform:
+    translateY(0)
+    scale(1);
 }
 
-body.menu-open .installBubble {
-  transform: translate(0, 0) scale(1);
+body.menuOpen #installBubble {
+  transform:
+    translateY(0)
+    scale(1);
 }
 
-body.menu-open .closeBubble {
-  transform: translate(-50%, 0) scale(1);
+body.menuOpen #closeBubble {
+  transform:
+    translate(-50%, 0)
+    scale(1);
 }
 
-.bubble:active {
-  transform: scale(.9) !important;
-}
 
+/* =========================
+   PANELS
+========================= */
 
-/* =========================================
-   OVERLAYS
-========================================= */
-
-.overlay {
+.panel {
   position: fixed;
+
   inset: 0;
+
   z-index: 50;
+
   display: flex;
   align-items: flex-end;
-  justify-content: center;
-  padding: 18px;
-  background: rgba(0,0,0,.55);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+
+  padding: 16px;
+
+  background:
+    rgba(0,0,0,.58);
+
+  backdrop-filter:
+    blur(14px);
+
+  -webkit-backdrop-filter:
+    blur(14px);
+
   opacity: 0;
   visibility: hidden;
+
   transition:
     opacity .3s ease,
     visibility .3s ease;
 }
 
-.overlay.open {
+.panel.open {
   opacity: 1;
   visibility: visible;
 }
 
-.glassSheet {
+.sheet {
   width: min(100%, 520px);
-  max-height: 82vh;
-  overflow: auto;
-  padding: 24px;
-  border-radius: 28px;
-  background: rgba(20,20,24,.84);
-  border: 1px solid rgba(255,255,255,.11);
-  box-shadow: 0 25px 80px rgba(0,0,0,.65);
-  transform: translateY(40px);
-  transition: transform .4s cubic-bezier(.16,1,.3,1);
+
+  margin: auto auto 0;
+
+  padding: 23px;
+
+  border-radius: 27px;
+
+  background:
+    rgba(19,19,23,.9);
+
+  border:
+    1px solid rgba(255,255,255,.1);
+
+  box-shadow:
+    0 25px 80px rgba(0,0,0,.7);
+
+  transform:
+    translateY(35px);
+
+  transition:
+    transform .4s cubic-bezier(.16,1,.3,1);
 }
 
-.overlay.open .glassSheet {
-  transform: translateY(0);
+.panel.open .sheet {
+  transform:
+    translateY(0);
 }
 
-.sheetHeader {
+.sheetTop {
   display: flex;
+
+  align-items: center;
+
   justify-content: space-between;
-  align-items: center;
+
+  font-size: 21px;
 }
 
-.sheetHeader h2 {
-  margin: 0;
-  font-size: 22px;
-}
-
-.sheetHeader button,
+.sheetTop button,
 #closeAnswer {
-  width: 38px;
-  height: 38px;
+  width: 37px;
+  height: 37px;
+
   border-radius: 50%;
-  background: rgba(255,255,255,.08);
+
+  background:
+    rgba(255,255,255,.08);
+
   color: white;
+
   font-size: 22px;
 }
 
-.sheetDescription {
-  color: rgba(255,255,255,.6);
+.sheet p {
+  color:
+    rgba(255,255,255,.55);
+
+  font-size: 13px;
+
   line-height: 1.55;
-  font-size: 14px;
 }
 
-.infoCard {
+.info {
   display: flex;
-  gap: 14px;
+
   align-items: center;
-  padding: 15px;
-  margin: 18px 0;
-  border-radius: 18px;
-  background: rgba(255,255,255,.055);
-}
 
-.infoCard span {
-  font-size: 25px;
-}
+  gap: 13px;
 
-.infoCard strong,
-.infoCard small {
-  display: block;
-}
+  padding: 14px;
 
-.infoCard small {
-  margin-top: 4px;
-  color: rgba(255,255,255,.48);
-}
+  margin: 17px 0;
 
-.primaryButton {
-  width: 100%;
-  min-height: 52px;
   border-radius: 17px;
-  background: rgba(120,220,255,.13);
-  border: 1px solid rgba(120,220,255,.24);
+
+  background:
+    rgba(255,255,255,.055);
+}
+
+.info small {
+  display: block;
+
+  margin-top: 3px;
+
+  color:
+    rgba(255,255,255,.42);
+}
+
+.mainButton {
+  width: 100%;
+
+  min-height: 52px;
+
+  border-radius: 17px;
+
+  background:
+    rgba(90,210,255,.13);
+
+  border:
+    1px solid rgba(90,210,255,.24);
+
   color: white;
+
   font-weight: 600;
 }
 
-.primaryButton:active {
-  transform: scale(.98);
-}
-
-.settingStatus {
-  margin-top: 13px;
+#connectionStatus {
   text-align: center;
-  font-size: 13px;
-  color: rgba(255,255,255,.6);
+
+  margin-top: 12px;
+
+  min-height: 18px;
+
+  font-size: 12px;
+
+  color:
+    rgba(255,255,255,.6);
 }
 
 
-/* =========================================
-   STUDY
-========================================= */
+/* =========================
+   SUBJECTS
+========================= */
 
-.studyOptions {
+.subjects {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 11px;
-  margin: 20px 0;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 10px;
+
+  margin: 18px 0;
 }
 
-.studyOption {
-  min-height: 95px;
-  border-radius: 20px;
-  background: rgba(255,255,255,.055);
-  border: 1px solid rgba(255,255,255,.08);
+.subjects button {
+  min-height: 90px;
+
+  border-radius: 19px;
+
+  background:
+    rgba(255,255,255,.055);
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
   color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 7px;
-}
 
-.studyOption span {
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  align-items: center;
+
+  gap: 6px;
+
   font-size: 26px;
 }
 
-.studyOption:active {
-  transform: scale(.97);
+.subjects span {
+  font-size: 12px;
 }
 
 
-/* =========================================
+/* =========================
    ANSWER
-========================================= */
+========================= */
 
-#answerPanel {
+#answer {
   position: fixed;
+
   z-index: 40;
+
   left: 50%;
-  bottom: 15px;
-  width: min(calc(100% - 30px), 600px);
+  bottom: 14px;
+
+  width:
+    min(
+      calc(100% - 28px),
+      600px
+    );
+
   max-height: 65vh;
-  overflow: auto;
-  transform: translate(-50%, calc(100% + 30px));
-  background: rgba(17,17,20,.9);
-  border: 1px solid rgba(255,255,255,.1);
+
+  overflow-y: auto;
+
   border-radius: 25px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 20px 70px rgba(0,0,0,.7);
-  transition: transform .45s cubic-bezier(.16,1,.3,1);
+
+  background:
+    rgba(17,17,21,.92);
+
+  border:
+    1px solid rgba(255,255,255,.1);
+
+  backdrop-filter:
+    blur(20px);
+
+  -webkit-backdrop-filter:
+    blur(20px);
+
+  box-shadow:
+    0 25px 70px rgba(0,0,0,.7);
+
+  transform:
+    translate(-50%, calc(100% + 30px));
+
+  transition:
+    transform .45s cubic-bezier(.16,1,.3,1);
 }
 
-#answerPanel.open {
-  transform: translate(-50%, 0);
+#answer.open {
+  transform:
+    translate(-50%, 0);
 }
 
-#answerHeader {
+#answerTop {
   position: sticky;
+
   top: 0;
+
   display: flex;
+
   justify-content: space-between;
+
   align-items: center;
-  padding: 14px 17px;
-  background: rgba(17,17,20,.95);
-  border-bottom: 1px solid rgba(255,255,255,.07);
+
+  padding: 13px 16px;
+
+  background:
+    rgba(17,17,21,.96);
+
+  border-bottom:
+    1px solid rgba(255,255,255,.07);
 }
 
-#answerContent {
+#answerText {
   padding: 17px;
-  color: rgba(255,255,255,.82);
+
+  color:
+    rgba(255,255,255,.82);
+
   line-height: 1.6;
+
   font-size: 14px;
-}
 
-.answerStep {
-  margin-bottom: 18px;
-}
-
-.answerStep strong {
-  display: block;
-  margin-bottom: 6px;
-  color: white;
+  white-space: pre-wrap;
 }
 
 
-/* =========================================
-   RESPONSIVE
-========================================= */
+/* =========================
+   PHONE
+========================= */
 
 @media (max-width: 430px) {
 
   #eyes {
-    width: 78vw;
+    width: 70vw;
+    height: 125px;
   }
 
-  .bubble {
-    width: 65px;
-    height: 65px;
+  .eye {
+    width: 76px;
+    height: 94px;
   }
 
-  .settingsBubble {
-    left: 18%;
+  .pupil {
+    width: 29px;
+    height: 29px;
   }
 
-  .installBubble {
-    right: 18%;
+  #settingsBubble {
+    left: 13%;
   }
 
-}
-
-
-/* =========================================
-   REDUCED MOTION
-========================================= */
-
-@media (prefers-reduced-motion: reduce) {
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: .01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: .01ms !important;
+  #installBubble {
+    right: 13%;
   }
 
 }
