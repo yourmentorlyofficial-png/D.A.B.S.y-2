@@ -1,57 +1,93 @@
-import { GoogleGenAI } from "https://cdn.jsdelivr.net/npm/@google/genai@2.17.1/+esm";
+const WORKER_URL =
+  "https://dabsy-ai.swagatdemo9292.workers.dev";
 
 
-/* =====================================================
-   ELEMENTS
-===================================================== */
+/* =========================================================
+   DABSy CORE
+========================================================= */
 
-const face = document.getElementById("face");
+const face =
+  document.getElementById("face");
 
-const leftEye = document.getElementById("leftEye");
-const rightEye = document.getElementById("rightEye");
+const eyes =
+  document.getElementById("eyes");
 
-const leftPupil = leftEye.querySelector(".pupil");
-const rightPupil = rightEye.querySelector(".pupil");
+const leftEye =
+  document.getElementById("leftEye");
 
-const status = document.getElementById("status");
-const speech = document.getElementById("speech");
-const hint = document.getElementById("hint");
+const rightEye =
+  document.getElementById("rightEye");
 
-const bubbleMenu = document.getElementById("bubbleMenu");
+const leftPupil =
+  leftEye.querySelector(".pupil");
 
-const studyButton = document.getElementById("studyButton");
-const settingsButton = document.getElementById("settingsButton");
-const closeMenuButton = document.getElementById("closeMenuButton");
+const rightPupil =
+  rightEye.querySelector(".pupil");
 
-const settingsOverlay = document.getElementById("settingsOverlay");
-const studyOverlay = document.getElementById("studyOverlay");
+const status =
+  document.getElementById("status");
 
-const closeSettings = document.getElementById("closeSettings");
-const closeStudy = document.getElementById("closeStudy");
+const speech =
+  document.getElementById("speech");
 
-const apiKeyInput = document.getElementById("apiKey");
+const hint =
+  document.getElementById("hint");
 
-const saveApiKey = document.getElementById("saveApiKey");
-const forgetApiKey = document.getElementById("forgetApiKey");
-
-const settingStatus = document.getElementById("settingStatus");
-
-const studyTalkButton = document.getElementById("studyTalkButton");
-
-const answerPanel = document.getElementById("answerPanel");
-const answerContent = document.getElementById("answerContent");
-const answerTitle = document.getElementById("answerTitle");
-const closeAnswer = document.getElementById("closeAnswer");
-
-const heart = document.getElementById("heart");
+const heart =
+  document.getElementById("heart");
 
 
-/* =====================================================
+/* =========================================================
+   UI
+========================================================= */
+
+const bubbleMenu =
+  document.getElementById("bubbleMenu");
+
+const studyButton =
+  document.getElementById("studyButton");
+
+const settingsButton =
+  document.getElementById("settingsButton");
+
+const closeMenuButton =
+  document.getElementById("closeMenuButton");
+
+
+const settingsOverlay =
+  document.getElementById("settingsOverlay");
+
+const studyOverlay =
+  document.getElementById("studyOverlay");
+
+
+const closeSettings =
+  document.getElementById("closeSettings");
+
+const closeStudy =
+  document.getElementById("closeStudy");
+
+
+const studyTalkButton =
+  document.getElementById("studyTalkButton");
+
+
+const answerPanel =
+  document.getElementById("answerPanel");
+
+const answerContent =
+  document.getElementById("answerContent");
+
+const answerTitle =
+  document.getElementById("answerTitle");
+
+const closeAnswer =
+  document.getElementById("closeAnswer");
+
+
+/* =========================================================
    STATE
-===================================================== */
-
-let geminiApiKey =
-  localStorage.getItem("dabsy_gemini_key") || "";
+========================================================= */
 
 let recognition = null;
 
@@ -59,154 +95,559 @@ let listening = false;
 
 let thinking = false;
 
+let speaking = false;
+
 let studyMode = false;
+
+let menuOpen = false;
 
 let lastTap = 0;
 
 let tapTimer = null;
 
-let touchStart = null;
+let idleTimer = null;
+
+let personalityTimer = null;
 
 let lastShake = 0;
 
 let petCooldown = false;
 
-
-/* =====================================================
-   BASIC DABSY SPEECH
-===================================================== */
-
-function showDABSy(message, state = "DABSy") {
-
-  status.textContent = state;
-
-  speech.textContent = message;
-
-}
+let currentEmotion = "calm";
 
 
-function speak(message) {
+/* =========================================================
+   PERSONALITY
+========================================================= */
 
-  if (!("speechSynthesis" in window)) return;
+const emotions = {
 
-  try {
+  calm() {
 
-    window.speechSynthesis.cancel();
+    resetEyes();
 
-    const utterance =
-      new SpeechSynthesisUtterance(message);
+  },
 
-    utterance.rate = 1.03;
 
-    utterance.pitch = 1.0;
+  happy() {
 
-    utterance.volume = 1;
+    leftEye.style.transform =
+      "scaleY(.78) translateY(-4px)";
 
-    window.speechSynthesis.speak(utterance);
+    rightEye.style.transform =
+      "scaleY(.78) translateY(-4px)";
 
-  } catch (error) {
+  },
 
-    console.log("Speech unavailable.");
+
+  curious() {
+
+    leftEye.style.transform =
+      "rotate(-7deg) scaleY(.94)";
+
+    rightEye.style.transform =
+      "rotate(7deg) scaleY(1.08)";
+
+  },
+
+
+  thinking() {
+
+    leftEye.style.transform =
+      "translateY(-7px) scale(.94)";
+
+    rightEye.style.transform =
+      "translateY(7px) scale(1.04)";
+
+  },
+
+
+  confused() {
+
+    leftEye.style.transform =
+      "rotate(9deg) scaleY(.88)";
+
+    rightEye.style.transform =
+      "rotate(-9deg) scaleY(1.08)";
+
+  },
+
+
+  excited() {
+
+    leftEye.style.transform =
+      "scale(1.12)";
+
+    rightEye.style.transform =
+      "scale(1.12)";
+
+  },
+
+
+  sleepy() {
+
+    leftEye.style.transform =
+      "scaleY(.38)";
+
+    rightEye.style.transform =
+      "scaleY(.38)";
 
   }
 
+};
+
+
+/* =========================================================
+   EMOTION ENGINE
+========================================================= */
+
+function setEmotion(
+  emotion
+) {
+
+  if (!emotions[emotion]) {
+
+    emotion = "calm";
+
+  }
+
+
+  currentEmotion =
+    emotion;
+
+
+  Object.values(
+    emotions
+  ).forEach(
+    () => {}
+  );
+
+
+  emotions[
+    emotion
+  ]();
+
 }
 
 
-/* =====================================================
-   STARTUP
-===================================================== */
+/* =========================================================
+   EYE RESET
+========================================================= */
 
-window.addEventListener("load", () => {
+function resetEyes() {
 
-  showDABSy(
-    "Hello Swagat, how can I help you today?",
-    "DABSy"
-  );
+  leftEye.style.transform = "";
+
+  rightEye.style.transform = "";
+
+}
+
+
+/* =========================================================
+   NATURAL BLINKING
+========================================================= */
+
+function randomBlink() {
+
+  if (
+    listening ||
+    thinking
+  ) {
+
+    return;
+
+  }
+
+
+  leftEye.style.transform =
+    "scaleY(.08)";
+
+  rightEye.style.transform =
+    "scaleY(.08)";
+
 
   setTimeout(() => {
 
-    speak(
-      "Hello Swagat, how can I help you today?"
+    setEmotion(
+      currentEmotion
     );
 
-  }, 700);
+  }, 130);
 
-});
+}
 
 
-/* =====================================================
-   EYE MOVEMENT
-===================================================== */
+/* =========================================================
+   RANDOM PERSONALITY
+========================================================= */
 
-document.addEventListener("pointermove", event => {
+function personalityLoop() {
+
+  clearTimeout(
+    personalityTimer
+  );
+
+
+  const delay =
+    2500 +
+    Math.random() * 5000;
+
+
+  personalityTimer =
+    setTimeout(() => {
+
+      if (
+        !listening &&
+        !thinking &&
+        !speaking &&
+        !menuOpen
+      ) {
+
+        const roll =
+          Math.random();
+
+
+        if (roll < .35) {
+
+          randomBlink();
+
+        }
+
+        else if (roll < .55) {
+
+          lookAround();
+
+        }
+
+        else if (roll < .68) {
+
+          becomeCurious();
+
+        }
+
+        else if (roll < .78) {
+
+          sleepyMoment();
+
+        }
+
+      }
+
+
+      personalityLoop();
+
+    }, delay);
+
+}
+
+
+function lookAround() {
 
   const x =
-    (event.clientX / window.innerWidth - 0.5) * 16;
+    (Math.random() - .5) * 18;
 
   const y =
-    (event.clientY / window.innerHeight - 0.5) * 16;
+    (Math.random() - .5) * 12;
+
 
   leftPupil.style.transform =
-    `translate(${x}px, ${y}px)`;
+    `translate(${x}px,${y}px)`;
 
   rightPupil.style.transform =
-    `translate(${x}px, ${y}px)`;
-
-});
+    `translate(${x}px,${y}px)`;
 
 
-/* =====================================================
-   TAP / DOUBLE TAP
-===================================================== */
+  setTimeout(() => {
 
-face.addEventListener("pointerup", event => {
+    leftPupil.style.transform = "";
 
-  const now = Date.now();
+    rightPupil.style.transform = "";
 
-  const difference = now - lastTap;
+  }, 1200);
 
-  if (difference < 320) {
+}
 
-    clearTimeout(tapTimer);
 
-    lastTap = 0;
+function becomeCurious() {
 
-    toggleMenu();
+  setEmotion(
+    "curious"
+  );
 
-  } else {
 
-    lastTap = now;
+  setTimeout(() => {
 
-    clearTimeout(tapTimer);
+    setEmotion(
+      "calm"
+    );
 
-    tapTimer = setTimeout(() => {
+  }, 1100);
 
-      lastTap = 0;
+}
 
-      startListening();
 
-    }, 330);
+function sleepyMoment() {
+
+  setEmotion(
+    "sleepy"
+  );
+
+
+  setTimeout(() => {
+
+    setEmotion(
+      "calm"
+    );
+
+  }, 1800);
+
+}
+
+
+/* =========================================================
+   SPEECH
+========================================================= */
+
+function say(
+  text
+) {
+
+  if (
+    !("speechSynthesis" in window)
+  ) {
+
+    return;
 
   }
 
-});
+
+  try {
+
+    speechSynthesis.cancel();
 
 
-/* =====================================================
+    const utterance =
+      new SpeechSynthesisUtterance(
+        text
+      );
+
+
+    utterance.rate =
+      .98;
+
+    utterance.pitch =
+      1.05;
+
+    utterance.volume =
+      1;
+
+
+    utterance.onstart =
+      () => {
+
+        speaking = true;
+
+      };
+
+
+    utterance.onend =
+      () => {
+
+        speaking = false;
+
+        setEmotion(
+          "calm"
+        );
+
+      };
+
+
+    speechSynthesis.speak(
+      utterance
+    );
+
+  }
+
+  catch (
+    error
+  ) {
+
+    console.log(
+      "Speech error:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   DABSy MESSAGE
+========================================================= */
+
+function showDABSy(
+  message,
+  label = "DABSy"
+) {
+
+  status.textContent =
+    label;
+
+  speech.textContent =
+    message;
+
+}
+
+
+/* =========================================================
+   STARTUP
+========================================================= */
+
+showDABSy(
+  "Hello Swagat. I'm here.",
+  "DABSy"
+);
+
+
+setEmotion(
+  "calm"
+);
+
+
+personalityLoop();
+
+
+setTimeout(() => {
+
+  say(
+    "Hello Swagat. I'm here."
+  );
+
+}, 700);
+
+
+/* =========================================================
+   EYE FOLLOW
+========================================================= */
+
+document.addEventListener(
+  "pointermove",
+  event => {
+
+    if (
+      thinking
+    ) return;
+
+
+    const x =
+      (event.clientX /
+        window.innerWidth -
+        .5) * 15;
+
+
+    const y =
+      (event.clientY /
+        window.innerHeight -
+        .5) * 13;
+
+
+    leftPupil.style.transform =
+      `translate(${x}px,${y}px)`;
+
+    rightPupil.style.transform =
+      `translate(${x}px,${y}px)`;
+
+  }
+);
+
+
+/* =========================================================
+   FACE TAP SYSTEM
+========================================================= */
+
+face.addEventListener(
+  "pointerup",
+  event => {
+
+    const now =
+      Date.now();
+
+
+    const difference =
+      now - lastTap;
+
+
+    if (
+      difference < 320
+    ) {
+
+      clearTimeout(
+        tapTimer
+      );
+
+
+      lastTap = 0;
+
+
+      toggleMenu();
+
+
+    }
+
+    else {
+
+      lastTap =
+        now;
+
+
+      clearTimeout(
+        tapTimer
+      );
+
+
+      tapTimer =
+        setTimeout(() => {
+
+          lastTap = 0;
+
+          startListening();
+
+        }, 330);
+
+    }
+
+  }
+);
+
+
+/* =========================================================
    MENU
-===================================================== */
+========================================================= */
 
 function toggleMenu() {
 
-  document.body.classList.toggle("menu-open");
+  menuOpen =
+    !menuOpen;
+
+
+  document.body.classList.toggle(
+    "menu-open",
+    menuOpen
+  );
 
 }
 
 
 function closeMenu() {
 
-  document.body.classList.remove("menu-open");
+  menuOpen =
+    false;
+
+
+  document.body.classList.remove(
+    "menu-open"
+  );
 
 }
 
@@ -217,157 +658,128 @@ closeMenuButton.addEventListener(
 );
 
 
-/* =====================================================
+/* =========================================================
    SETTINGS
-===================================================== */
+========================================================= */
 
-settingsButton.addEventListener("click", () => {
+settingsButton.addEventListener(
+  "click",
+  () => {
 
-  closeMenu();
+    closeMenu();
 
-  openOverlay(settingsOverlay);
-
-  apiKeyInput.value = geminiApiKey;
-
-});
-
-
-closeSettings.addEventListener("click", () => {
-
-  closeOverlay(settingsOverlay);
-
-});
-
-
-saveApiKey.addEventListener("click", () => {
-
-  const key =
-    apiKeyInput.value.trim();
-
-  if (!key) {
-
-    settingStatus.textContent =
-      "Please enter your Gemini key.";
-
-    return;
+    settingsOverlay.classList.add(
+      "open"
+    );
 
   }
-
-  geminiApiKey = key;
-
-  localStorage.setItem(
-    "dabsy_gemini_key",
-    geminiApiKey
-  );
-
-  settingStatus.textContent =
-    "Key saved. DABSy is ready.";
-
-  showDABSy(
-    "I'm connected. Let's do this.",
-    "Ready"
-  );
-
-  setTimeout(() => {
-
-    closeOverlay(settingsOverlay);
-
-  }, 900);
-
-});
+);
 
 
-forgetApiKey.addEventListener("click", () => {
+closeSettings.addEventListener(
+  "click",
+  () => {
 
-  localStorage.removeItem("dabsy_gemini_key");
+    settingsOverlay.classList.remove(
+      "open"
+    );
 
-  geminiApiKey = "";
-
-  apiKeyInput.value = "";
-
-  settingStatus.textContent =
-    "Saved key forgotten.";
-
-});
+  }
+);
 
 
-/* =====================================================
-   OVERLAYS
-===================================================== */
+/* =========================================================
+   STUDY
+========================================================= */
 
-function openOverlay(element) {
+studyButton.addEventListener(
+  "click",
+  () => {
 
-  element.classList.add("open");
+    closeMenu();
 
-}
+    studyOverlay.classList.add(
+      "open"
+    );
 
-
-function closeOverlay(element) {
-
-  element.classList.remove("open");
-
-}
-
-
-studyButton.addEventListener("click", () => {
-
-  closeMenu();
-
-  openOverlay(studyOverlay);
-
-});
+  }
+);
 
 
-closeStudy.addEventListener("click", () => {
+closeStudy.addEventListener(
+  "click",
+  () => {
 
-  closeOverlay(studyOverlay);
+    studyOverlay.classList.remove(
+      "open"
+    );
 
-});
+  }
+);
 
 
-/* =====================================================
-   STUDY TOPICS
-===================================================== */
+document
+  .querySelectorAll(
+    ".studyOption"
+  )
+  .forEach(
+    button => {
 
-document.querySelectorAll(".studyOption")
-  .forEach(button => {
+      button.addEventListener(
+        "click",
+        () => {
 
-    button.addEventListener("click", () => {
+          const topic =
+            button.dataset.topic;
 
-      const topic =
-        button.dataset.topic;
 
-      closeOverlay(studyOverlay);
+          studyMode =
+            true;
 
-      studyMode = true;
 
-      showDABSy(
-        `I'm ready for ${topic}. Tell me what you're stuck on.`,
-        "Study Mode"
+          studyOverlay.classList.remove(
+            "open"
+          );
+
+
+          setEmotion(
+            "excited"
+          );
+
+
+          showDABSy(
+            `Ready for ${topic}. Tell me what you're stuck on.`,
+            "Study Mode"
+          );
+
+
+          say(
+            `Ready for ${topic}. Tell me what you're stuck on.`
+          );
+
+
+          setTimeout(
+            startListening,
+            900
+          );
+
+        }
       );
 
-      speak(
-        `I'm ready for ${topic}. Tell me what you're stuck on.`
-      );
-
-      setTimeout(() => {
-
-        startListening();
-
-      }, 700);
-
-    });
-
-  });
+    }
+  );
 
 
 studyTalkButton.addEventListener(
   "click",
   () => {
 
-    closeOverlay(studyOverlay);
+    studyOverlay.classList.remove(
+      "open"
+    );
 
-    studyMode = true;
+    studyMode =
+      true;
 
     startListening();
 
@@ -375,147 +787,204 @@ studyTalkButton.addEventListener(
 );
 
 
-/* =====================================================
-   SPEECH RECOGNITION
-===================================================== */
+/* =========================================================
+   MICROPHONE
+========================================================= */
 
-function setupRecognition() {
+function createRecognition() {
 
   const SpeechRecognition =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
-  if (!SpeechRecognition) {
+
+  if (
+    !SpeechRecognition
+  ) {
 
     return null;
 
   }
 
+
   const r =
     new SpeechRecognition();
 
-  r.lang = "en-IN";
 
-  r.continuous = false;
-
-  r.interimResults = true;
-
-  r.maxAlternatives = 1;
+  r.lang =
+    "en-IN";
 
 
-  r.onstart = () => {
-
-    listening = true;
-
-    document.body.classList.add(
-      "listening"
-    );
-
-    showDABSy(
-      "I'm listening...",
-      "Listening"
-    );
-
-  };
+  r.continuous =
+    false;
 
 
-  r.onresult = event => {
+  r.interimResults =
+    true;
 
-    let finalText = "";
 
-    let interimText = "";
+  r.maxAlternatives =
+    1;
 
-    for (
-      let i = event.resultIndex;
-      i < event.results.length;
-      i++
-    ) {
 
-      const result =
-        event.results[i];
+  r.onstart =
+    () => {
 
-      if (result.isFinal) {
+      listening =
+        true;
 
-        finalText +=
-          result[0].transcript;
 
-      } else {
+      document.body.classList.add(
+        "listening"
+      );
 
-        interimText +=
-          result[0].transcript;
+
+      setEmotion(
+        "curious"
+      );
+
+
+      showDABSy(
+        "I'm listening...",
+        "Listening"
+      );
+
+    };
+
+
+  r.onresult =
+    event => {
+
+      let finalText =
+        "";
+
+
+      let interimText =
+        "";
+
+
+      for (
+        let i =
+          event.resultIndex;
+
+        i <
+          event.results.length;
+
+        i++
+      ) {
+
+        const result =
+          event.results[i];
+
+
+        if (
+          result.isFinal
+        ) {
+
+          finalText +=
+            result[0]
+              .transcript;
+
+        }
+
+        else {
+
+          interimText +=
+            result[0]
+              .transcript;
+
+        }
 
       }
 
-    }
 
-    const visibleText =
-      finalText || interimText;
+      const visible =
+        finalText ||
+        interimText;
 
-    if (visibleText) {
 
-      speech.textContent =
-        visibleText;
+      if (
+        visible
+      ) {
 
-    }
+        speech.textContent =
+          visible;
 
-    if (finalText) {
+      }
 
-      processUserRequest(
-        finalText.trim()
+
+      if (
+        finalText
+      ) {
+
+        askDABSy(
+          finalText.trim()
+        );
+
+      }
+
+    };
+
+
+  r.onerror =
+    error => {
+
+      listening =
+        false;
+
+
+      document.body.classList.remove(
+        "listening"
       );
 
-    }
 
-  };
-
-
-  r.onerror = event => {
-
-    listening = false;
-
-    document.body.classList.remove(
-      "listening"
-    );
-
-    console.log(
-      "Speech error:",
-      event.error
-    );
-
-    if (
-      event.error === "not-allowed"
-    ) {
-
-      showDABSy(
-        "I need microphone permission first.",
-        "Microphone"
+      console.log(
+        "Microphone:",
+        error
       );
 
-      speak(
-        "I need microphone permission first."
+
+      if (
+        error.error ===
+        "not-allowed"
+      ) {
+
+        showDABSy(
+          "I need microphone permission.",
+          "Microphone"
+        );
+
+
+        say(
+          "I need microphone permission."
+        );
+
+      }
+
+      else {
+
+        showDABSy(
+          "I didn't catch that.",
+          "Ready"
+        );
+
+      }
+
+    };
+
+
+  r.onend =
+    () => {
+
+      listening =
+        false;
+
+
+      document.body.classList.remove(
+        "listening"
       );
 
-    } else {
-
-      showDABSy(
-        "I didn't catch that. Tap me and try again.",
-        "Ready"
-      );
-
-    }
-
-  };
-
-
-  r.onend = () => {
-
-    listening = false;
-
-    document.body.classList.remove(
-      "listening"
-    );
-
-  };
+    };
 
 
   return r;
@@ -524,217 +993,146 @@ function setupRecognition() {
 
 
 recognition =
-  setupRecognition();
+  createRecognition();
 
 
-/* =====================================================
+/* =========================================================
    START LISTENING
-===================================================== */
+========================================================= */
 
 function startListening() {
 
-  if (thinking) return;
+  if (
+    thinking ||
+    listening
+  ) return;
 
-  if (!recognition) {
+
+  if (
+    !recognition
+  ) {
 
     showDABSy(
-      "Voice input isn't supported here. Try Chrome on Android.",
-      "Voice unavailable"
+      "Voice isn't supported here. Try Chrome.",
+      "Voice"
     );
 
-    speak(
-      "Voice input isn't supported here."
-    );
 
     return;
 
   }
+
 
   try {
 
     recognition.start();
 
-  } catch (error) {
-
-    console.log(
-      "Recognition already running."
-    );
-
   }
 
-}
-
-
-/* =====================================================
-   PROCESS USER REQUEST
-===================================================== */
-
-async function processUserRequest(
-  userText
-) {
-
-  if (!userText) return;
-
-  if (
-    userText.toLowerCase()
-      .includes("stop listening")
+  catch (
+    error
   ) {
 
-    return;
-
-  }
-
-
-  if (!geminiApiKey) {
-
-    showDABSy(
-      "I need my Gemini connection first. Double-tap me and open Settings.",
-      "Needs setup"
+    console.log(
+      error
     );
 
-    speak(
-      "I need my Gemini connection first. Double-tap me and open Settings."
-    );
-
-    return;
-
   }
-
-
-  await askGemini(userText);
 
 }
 
 
-/* =====================================================
-   GEMINI
-===================================================== */
+/* =========================================================
+   TALK TO PRIVATE WORKER
+========================================================= */
 
-async function askGemini(question) {
+async function askDABSy(
+  message
+) {
 
-  thinking = true;
+  if (
+    !message
+  ) return;
+
+
+  thinking =
+    true;
+
 
   document.body.classList.remove(
     "listening"
   );
+
 
   document.body.classList.add(
     "thinking"
   );
 
 
+  setEmotion(
+    "thinking"
+  );
+
+
   showDABSy(
-    "Let me think about that...",
-    "Thinking"
+    "Hmm... let me think.",
+    studyMode
+      ? "Study Mode"
+      : "Thinking"
   );
 
 
   try {
 
-    const ai =
-      new GoogleGenAI({
-        apiKey: geminiApiKey
-      });
-
-
-    const modeInstruction =
-      studyMode
-
-        ? `
-You are in STUDY MODE.
-
-The user is a Class 11 science student in India.
-
-Explain concepts clearly and patiently.
-
-Use simple language.
-
-Break difficult ideas into logical steps.
-
-Do not just dump an answer.
-
-Help the student understand WHY the answer works.
-`
-
-        : `
-You are DABSy, a friendly AI desk companion.
-
-Be helpful, calm, concise and natural.
-
-You can help with studying, planning, questions and everyday tasks.
-`;
-
-
-    const prompt = `
-
-${modeInstruction}
-
-The user's question is:
-
-"${question}"
-
-Return ONLY valid JSON in this structure:
-
-{
-  "spoken": "A short natural response of 1 or 2 sentences.",
-  "answer": "A useful explanation for the screen."
-}
-
-Do not use markdown fences.
-`;
-
-
     const response =
-      await ai.models.generateContent({
+      await fetch(
+        WORKER_URL,
+        {
 
-        model:
-          "gemini-2.5-flash",
+          method:
+            "POST",
 
-        contents:
-          prompt
+          headers: {
 
-      });
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body:
+            JSON.stringify({
+
+              message:
+                message,
+
+              studyMode:
+                studyMode
+
+            })
+
+        }
+      );
 
 
-    const raw =
-      response.text || "";
+    const data =
+      await response.json();
 
 
-    let data;
+    if (
+      !response.ok ||
+      !data.ok
+    ) {
 
-
-    try {
-
-      const match =
-        raw.match(/\{[\s\S]*\}/);
-
-      data =
-        JSON.parse(
-          match ? match[0] : raw
-        );
-
-    } catch {
-
-      data = {
-
-        spoken:
-          "I've got the answer for you.",
-
-        answer:
-          raw
-
-      };
+      throw new Error(
+        data.error ||
+        "Worker request failed."
+      );
 
     }
 
 
-    const spoken =
-      data.spoken ||
-      "I've got something for you.";
-
-    const answer =
-      data.answer ||
-      "I couldn't format that answer properly.";
+    thinking =
+      false;
 
 
     document.body.classList.remove(
@@ -742,59 +1140,89 @@ Do not use markdown fences.
     );
 
 
-    thinking = false;
+    setEmotion(
+      data.emotion ||
+      "calm"
+    );
 
 
     showDABSy(
-      spoken,
+      data.spoken ||
+      "I've got something for you.",
       studyMode
         ? "Study Mode"
         : "DABSy"
     );
 
 
-    speak(spoken);
-
-
-    showAnswer(
-      question,
-      answer
+    say(
+      data.spoken ||
+      data.answer ||
+      "I've got something for you."
     );
 
 
-  } catch (error) {
+    showAnswer(
+      message,
+      data.answer ||
+      data.spoken ||
+      ""
+    );
+
+
+  }
+
+  catch (
+    error
+  ) {
 
     console.error(
-      "Gemini error:",
+      "DABSy AI:",
       error
     );
 
 
-    thinking = false;
+    thinking =
+      false;
+
 
     document.body.classList.remove(
       "thinking"
     );
 
 
+    setEmotion(
+      "confused"
+    );
+
+
     showDABSy(
-      "Something went wrong with my AI connection. Double-tap me and check Settings.",
-      "Connection problem"
+      "My brain connection hiccupped. Try me again.",
+      "Connection"
     );
 
 
-    speak(
-      "Something went wrong with my AI connection."
+    say(
+      "My brain connection hiccupped. Try me again."
     );
+
+
+    setTimeout(() => {
+
+      setEmotion(
+        "calm"
+      );
+
+    }, 1600);
 
   }
 
 }
 
 
-/* =====================================================
-   ANSWER PANEL
-===================================================== */
+/* =========================================================
+   ANSWER
+========================================================= */
 
 function showAnswer(
   question,
@@ -803,78 +1231,103 @@ function showAnswer(
 
   answerTitle.textContent =
     studyMode
-      ? "📚 Study Breakdown"
+      ? "📚 Study Mode"
       : "DABSy";
 
 
-  answerContent.innerHTML = "";
+  answerContent.innerHTML =
+    "";
 
 
-  const questionElement =
-    document.createElement("div");
+  const q =
+    document.createElement(
+      "div"
+    );
 
-  questionElement.className =
+
+  q.className =
     "answerStep";
 
-  const questionTitle =
-    document.createElement("strong");
 
-  questionTitle.textContent =
-    "You asked";
+  const qTitle =
+    document.createElement(
+      "strong"
+    );
 
-  const questionText =
-    document.createElement("div");
 
-  questionText.textContent =
+  qTitle.textContent =
+    "You said";
+
+
+  const qText =
+    document.createElement(
+      "div"
+    );
+
+
+  qText.textContent =
     question;
 
 
-  questionElement.appendChild(
-    questionTitle
-  );
-
-  questionElement.appendChild(
-    questionText
+  q.appendChild(
+    qTitle
   );
 
 
-  const answerElement =
-    document.createElement("div");
+  q.appendChild(
+    qText
+  );
 
-  answerElement.className =
+
+  const a =
+    document.createElement(
+      "div"
+    );
+
+
+  a.className =
     "answerStep";
 
-  const answerTitleElement =
-    document.createElement("strong");
 
-  answerTitleElement.textContent =
+  const aTitle =
+    document.createElement(
+      "strong"
+    );
+
+
+  aTitle.textContent =
     studyMode
       ? "Let's understand it"
-      : "Here's what I think";
+      : "DABSy says";
 
 
-  const answerText =
-    document.createElement("div");
+  const aText =
+    document.createElement(
+      "div"
+    );
 
-  answerText.textContent =
+
+  aText.textContent =
     answer;
 
 
-  answerElement.appendChild(
-    answerTitleElement
+  a.appendChild(
+    aTitle
   );
 
-  answerElement.appendChild(
-    answerText
+
+  a.appendChild(
+    aText
   );
 
 
   answerContent.appendChild(
-    questionElement
+    q
   );
 
+
   answerContent.appendChild(
-    answerElement
+    a
   );
 
 
@@ -897,9 +1350,9 @@ closeAnswer.addEventListener(
 );
 
 
-/* =====================================================
+/* =========================================================
    PETTING
-===================================================== */
+========================================================= */
 
 face.addEventListener(
   "pointermove",
@@ -909,9 +1362,15 @@ face.addEventListener(
       event.buttons !== 1
     ) return;
 
-    if (petCooldown) return;
 
-    petCooldown = true;
+    if (
+      petCooldown
+    ) return;
+
+
+    petCooldown =
+      true;
+
 
     showHeart(
       event.clientX,
@@ -919,36 +1378,43 @@ face.addEventListener(
     );
 
 
-    /* Soft happy eyes */
-
-    leftEye.style.transform =
-      "scaleY(0.78)";
-
-    rightEye.style.transform =
-      "scaleY(0.78)";
+    setEmotion(
+      "happy"
+    );
 
 
-    setTimeout(() => {
+    showDABSy(
+      "Hehe...",
+      "DABSy"
+    );
 
-      leftEye.style.transform =
-        "";
 
-      rightEye.style.transform =
-        "";
+    setTimeout(
+      () => {
 
-      petCooldown = false;
+        setEmotion(
+          "calm"
+        );
 
-    }, 500);
+        petCooldown =
+          false;
+
+      },
+      650
+    );
 
   }
 );
 
 
-/* =====================================================
+/* =========================================================
    HEART
-===================================================== */
+========================================================= */
 
-function showHeart(x, y) {
+function showHeart(
+  x,
+  y
+) {
 
   heart.style.left =
     `${x - 10}px`;
@@ -972,61 +1438,43 @@ function showHeart(x, y) {
 }
 
 
-/* =====================================================
-   TOUCH TRACKING
-===================================================== */
-
-face.addEventListener(
-  "pointerdown",
-  event => {
-
-    touchStart = {
-
-      x: event.clientX,
-
-      y: event.clientY,
-
-      time: Date.now()
-
-    };
-
-  }
-);
-
-
-/* =====================================================
-   SHAKE DETECTION
-===================================================== */
+/* =========================================================
+   SHAKE
+========================================================= */
 
 if (
-  "DeviceMotionEvent" in window
+  "DeviceMotionEvent"
+  in window
 ) {
 
   window.addEventListener(
     "devicemotion",
     event => {
 
-      const acc =
+      const a =
         event.accelerationIncludingGravity;
 
-      if (!acc) return;
+
+      if (
+        !a
+      ) return;
 
 
       const x =
-        acc.x || 0;
+        a.x || 0;
 
       const y =
-        acc.y || 0;
+        a.y || 0;
 
       const z =
-        acc.z || 0;
+        a.z || 0;
 
 
-      const magnitude =
+      const force =
         Math.sqrt(
-          x * x +
-          y * y +
-          z * z
+          x*x +
+          y*y +
+          z*z
         );
 
 
@@ -1035,13 +1483,15 @@ if (
 
 
       if (
-        magnitude > 20 &&
+        force > 20 &&
         now - lastShake > 1000
       ) {
 
-        lastShake = now;
+        lastShake =
+          now;
 
-        doShakeReaction();
+
+        shakeReaction();
 
       }
 
@@ -1051,20 +1501,23 @@ if (
 }
 
 
-/* =====================================================
-   SHAKE REACTION
-===================================================== */
-
-function doShakeReaction() {
+function shakeReaction() {
 
   document.body.classList.remove(
     "shaken"
   );
 
+
   void document.body.offsetWidth;
+
 
   document.body.classList.add(
     "shaken"
+  );
+
+
+  setEmotion(
+    "confused"
   );
 
 
@@ -1074,7 +1527,7 @@ function doShakeReaction() {
   );
 
 
-  speak(
+  say(
     "Whoa!"
   );
 
@@ -1082,36 +1535,38 @@ function doShakeReaction() {
   setTimeout(() => {
 
     showDABSy(
-      "Okay... I'm good 😵‍💫",
+      "Okay... I'm good. 😵‍💫",
       "DABSy"
     );
 
-  }, 850);
+
+    setEmotion(
+      "calm"
+    );
+
+  }, 1000);
 
 }
 
 
-/* =====================================================
-   MENU AUTO CLOSE
-===================================================== */
+/* =========================================================
+   CLEANUP
+========================================================= */
 
-document.addEventListener(
-  "pointerdown",
-  event => {
+window.addEventListener(
+  "visibilitychange",
+  () => {
 
     if (
-      document.body.classList.contains(
-        "menu-open"
-      )
+      document.hidden
     ) {
 
       if (
-        !event.target.closest(
-          ".bubble"
-        )
+        "speechSynthesis"
+        in window
       ) {
 
-        closeMenu();
+        speechSynthesis.cancel();
 
       }
 
@@ -1121,32 +1576,22 @@ document.addEventListener(
 );
 
 
-/* =====================================================
-   PREVENT ACCIDENTAL ZOOM
-===================================================== */
-
-document.addEventListener(
-  "gesturestart",
-  event => {
-
-    event.preventDefault();
-
-  }
-);
-
-
-/* =====================================================
-   DEBUG HELPER
-===================================================== */
+/* =========================================================
+   DEBUG
+========================================================= */
 
 window.DABSy = {
 
-  listen: startListening,
+  listen:
+    startListening,
 
-  menu: toggleMenu,
+  ask:
+    askDABSy,
 
-  shake: doShakeReaction,
+  shake:
+    shakeReaction,
 
-  ask: processUserRequest
+  menu:
+    toggleMenu
 
 };
