@@ -1,7 +1,7 @@
 {
   "name": "DABSy",
   "short_name": "DABSy",
-  "description": "DABSy, your AI desk and study companion.",
+  "description": "DABSy AI desk and study companion",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
