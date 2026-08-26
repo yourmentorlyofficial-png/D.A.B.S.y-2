@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dabsy-final-v1';
+const CACHE_NAME = 'dabsy-living-v1';
 const ASSETS = [
   './index.html',
   './styles.css',
