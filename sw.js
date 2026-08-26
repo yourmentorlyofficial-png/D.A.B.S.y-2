@@ -1,6 +1,7 @@
-const CACHE_NAME = "dabsy-v-final";
+const CACHE =
+  "dabsy-final-v2";
 
-const APP_SHELL = [
+const FILES = [
   "./",
   "./index.html",
   "./styles.css",
@@ -10,10 +11,6 @@ const APP_SHELL = [
 ];
 
 
-/* =========================================
-   INSTALL
-========================================= */
-
 self.addEventListener(
   "install",
   event => {
@@ -21,11 +18,11 @@ self.addEventListener(
     event.waitUntil(
 
       caches
-        .open(CACHE_NAME)
+        .open(CACHE)
         .then(
           cache =>
             cache.addAll(
-              APP_SHELL
+              FILES
             )
         )
         .then(
@@ -39,10 +36,6 @@ self.addEventListener(
 );
 
 
-/* =========================================
-   ACTIVATE
-========================================= */
-
 self.addEventListener(
   "activate",
   event => {
@@ -54,15 +47,19 @@ self.addEventListener(
         .then(
           keys =>
             Promise.all(
+
               keys
                 .filter(
                   key =>
-                    key !== CACHE_NAME
+                    key !== CACHE
                 )
                 .map(
                   key =>
-                    caches.delete(key)
+                    caches.delete(
+                      key
+                    )
                 )
+
             )
         )
         .then(
@@ -76,10 +73,6 @@ self.addEventListener(
 );
 
 
-/* =========================================
-   FETCH
-========================================= */
-
 self.addEventListener(
   "fetch",
   event => {
@@ -87,10 +80,9 @@ self.addEventListener(
     const request =
       event.request;
 
+
     /*
-      Never cache POST requests.
-      The AI request must always reach
-      the Cloudflare Worker.
+      NEVER cache AI POST requests.
     */
 
     if (
@@ -109,8 +101,8 @@ self.addEventListener(
 
 
     /*
-      Don't interfere with external
-      Gemini / Cloudflare requests.
+      Only handle files belonging
+      to the GitHub Pages app.
     */
 
     if (
@@ -159,9 +151,7 @@ self.addEventListener(
 
 
               caches
-                .open(
-                  CACHE_NAME
-                )
+                .open(CACHE)
                 .then(
                   cache =>
                     cache.put(
