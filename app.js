@@ -1,198 +1,1277 @@
-import { GoogleGenAI } from 'https://cdn.jsdelivr.net/npm/@google/genai@2.17.1/+esm';
+import {
+  GoogleGenAI
+} from "https://cdn.jsdelivr.net/npm/@google/genai@2.17.1/+esm";
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch((err) => console.error(err));
-  });
+
+/* =========================================================
+   D.A.B.S.y
+   AI DESK STUDY BUDDY
+========================================================= */
+
+
+/* =========================
+   ELEMENTS
+========================= */
+
+const $ = id => document.getElementById(id);
+
+const dabsy = $("dabsy");
+
+const leftEye = $("leftEye");
+const rightEye = $("rightEye");
+
+const mouth = $("mouth");
+
+const status = $("status");
+const speech = $("speech");
+
+const aura = $("ambientAura");
+
+const talkButton = $("talkButton");
+const talkText = $("talkText");
+
+const micIcon = $("micIcon");
+
+const studyButton = $("studyButton");
+const settingsButton = $("settingsButton");
+
+const modeIndicator = $("modeIndicator");
+
+const panel = $("presentationPanel");
+const panelTitle = $("panelTitle");
+const panelContent = $("panelContent");
+const closePanel = $("closePanel");
+
+
+/* =========================
+   STATE
+========================= */
+
+let apiKey =
+  localStorage.getItem("dabsy_gemini_key") || "";
+
+let studyMode =
+  localStorage.getItem("dabsy_study_mode") === "true";
+
+let recognition = null;
+
+let listening = false;
+
+let conversation = [];
+
+
+/* =========================
+   STARTUP
+========================= */
+
+window.addEventListener(
+  "DOMContentLoaded",
+  initialize
+);
+
+
+function initialize() {
+
+  updateMode();
+
+  setMood(
+    "happy",
+    "DABSy Online",
+    "Hello Swagat. How can I help you today?"
+  );
+
+  setupSpeechRecognition();
+
+  startPersonality();
+
 }
 
-let deferredPrompt;
-const installCard = document.getElementById('installCard');
-const installBtn = document.getElementById('installBtn');
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  if (installCard) installCard.style.display = 'flex';
-});
+/* =========================================================
+   DABSY PERSONALITY
+========================================================= */
 
-if (installBtn) {
-  installBtn.addEventListener('click', async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') installCard.style.display = 'none';
-      deferredPrompt = null;
+function startPersonality() {
+
+  setInterval(() => {
+
+    if (
+      listening ||
+      document.body.classList.contains("thinking")
+    ) {
+      return;
     }
-  });
+
+    const random =
+      Math.random();
+
+    if (random < 0.25) {
+
+      lookAround();
+
+    }
+
+  }, 5000);
+
 }
 
-const leftEye = document.getElementById('leftEye');
-const rightEye = document.getElementById('rightEye');
-const mouthSmile = document.getElementById('mouthSmile');
-const companionStatus = document.getElementById('companionStatus');
-const companionSpeech = document.getElementById('companionSpeech');
-const ambientAura = document.getElementById('ambientAura');
-const presentationPanel = document.getElementById('presentationPanel');
-const panelTitle = document.getElementById('panelTitle');
-const panelContentArea = document.getElementById('panelContentArea');
-const panelCloseBtn = document.getElementById('panelCloseBtn');
-const talkBtn = document.getElementById('talkBtn');
-const talkBtnText = document.getElementById('talkBtnText');
-const settingsBtn = document.getElementById('settingsBtn');
 
-let geminiApiKey = localStorage.getItem('dabsy_gemini_key') || '';
-let isCornerModeActive = false;
+/* =========================
+   LOOK AROUND
+========================= */
 
-window.addEventListener('DOMContentLoaded', () => {
-  setMood('happy', 'DABSy Online', 'Hello Swagat, how can I help you today?');
-});
+function lookAround() {
 
-function setMood(mood, status, dialogue) {
-  companionStatus.textContent = status;
-  companionSpeech.innerHTML = dialogue;
-  speakText(dialogue);
+  const direction =
+    Math.random() > 0.5
+      ? "left"
+      : "right";
 
-  if (mood === 'happy') {
-    leftEye.style.background = 'var(--primary)';
-    rightEye.style.background = 'var(--primary)';
-    leftEye.style.transform = 'scale(1)';
-    mouthSmile.style.width = '60px';
-    mouthSmile.style.borderColor = 'var(--primary)';
-    ambientAura.style.background = 'rgba(99, 102, 241, 0.5)';
-  } else if (mood === 'study') {
-    leftEye.style.background = 'var(--accent)';
-    rightEye.style.background = 'var(--accent)';
-    leftEye.style.transform = 'scaleY(0.75)';
-    mouthSmile.style.width = '35px';
-    mouthSmile.style.borderColor = 'var(--accent)';
-    ambientAura.style.background = 'rgba(6, 182, 212, 0.5)';
-  } else if (mood === 'thinking') {
-    leftEye.style.background = 'var(--success)';
-    rightEye.style.background = 'var(--success)';
-    leftEye.style.transform = 'scale(1.15)';
-    mouthSmile.style.width = '20px';
-    mouthSmile.style.borderColor = 'var(--success)';
-    ambientAura.style.background = 'rgba(16, 185, 129, 0.5)';
+  dabsy.classList.add(
+    direction === "left"
+      ? "look-left"
+      : "look-right"
+  );
+
+  setTimeout(() => {
+
+    dabsy.classList.remove(
+      "look-left",
+      "look-right"
+    );
+
+  }, 1200);
+
+}
+
+
+/* =========================
+   BLINK
+========================= */
+
+function blink() {
+
+  dabsy.classList.add("blink");
+
+  setTimeout(() => {
+
+    dabsy.classList.remove("blink");
+
+  }, 180);
+
+}
+
+
+setInterval(() => {
+
+  if (!listening) {
+    blink();
   }
-}
 
-function speakText(text) {
-  if ('speechSynthesis' in window && !text.includes('<input')) {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text.replace(/<[^>]*>?/gm, ''));
-    utterance.rate = 1.05;
-    window.speechSynthesis.speak(utterance);
+}, 3500);
+
+
+/* =========================================================
+   MOODS
+========================================================= */
+
+function setMood(
+  mood,
+  statusText,
+  dialogue
+) {
+
+  status.textContent =
+    statusText || "";
+
+  speech.textContent =
+    dialogue || "";
+
+
+  document.body.classList.remove(
+    "thinking"
+  );
+
+
+  mouth.classList.remove(
+    "thinking",
+    "speaking"
+  );
+
+
+  if (mood === "happy") {
+
+    setEyeColor(
+      "var(--primary)"
+    );
+
+    aura.style.background =
+      "rgba(120,100,255,.30)";
+
+    mouth.style.borderColor =
+      "var(--primary)";
+
+    mouth.style.width =
+      "45px";
+
   }
+
+
+  if (mood === "thinking") {
+
+    document.body.classList.add(
+      "thinking"
+    );
+
+    setEyeColor(
+      "var(--success)"
+    );
+
+    aura.style.background =
+      "rgba(60,255,180,.25)";
+
+    mouth.classList.add(
+      "thinking"
+    );
+
+  }
+
+
+  if (mood === "listening") {
+
+    setEyeColor(
+      "#ffffff"
+    );
+
+    aura.style.background =
+      "rgba(255,255,255,.18)";
+
+    mouth.style.borderColor =
+      "#ffffff";
+
+  }
+
+
+  if (mood === "study") {
+
+    setEyeColor(
+      "var(--accent)"
+    );
+
+    aura.style.background =
+      "rgba(50,220,255,.25)";
+
+    mouth.style.borderColor =
+      "var(--accent)";
+
+  }
+
+
+  if (mood === "error") {
+
+    setEyeColor(
+      "#ff6b81"
+    );
+
+    aura.style.background =
+      "rgba(255,70,100,.20)";
+
+  }
+
 }
 
-function enterCornerMode(title, htmlContent) {
-  isCornerModeActive = true;
-  document.body.classList.add('corner-mode');
-  panelTitle.textContent = title;
-  panelContentArea.innerHTML = htmlContent;
+
+function setEyeColor(color) {
+
+  leftEye.style.background =
+    color;
+
+  rightEye.style.background =
+    color;
+
 }
 
-function exitCornerMode() {
-  isCornerModeActive = false;
-  document.body.classList.remove('corner-mode');
-  setMood('happy', 'DABSy Online', 'Welcome back! Let me know if you need anything else.');
+
+/* =========================================================
+   TEXT TO SPEECH
+========================================================= */
+
+function speak(text) {
+
+  if (
+    !("speechSynthesis" in window)
+  ) {
+    return;
+  }
+
+  if (!text) {
+    return;
+  }
+
+
+  speechSynthesis.cancel();
+
+
+  const cleanText =
+    String(text)
+      .replace(/[*_#`]/g, "")
+      .replace(/<[^>]*>/g, "");
+
+
+  const utterance =
+    new SpeechSynthesisUtterance(
+      cleanText
+    );
+
+
+  utterance.rate =
+    1.03;
+
+  utterance.pitch =
+    1.0;
+
+
+  utterance.onstart = () => {
+
+    mouth.classList.add(
+      "speaking"
+    );
+
+  };
+
+
+  utterance.onend = () => {
+
+    mouth.classList.remove(
+      "speaking"
+    );
+
+  };
+
+
+  speechSynthesis.speak(
+    utterance
+  );
+
 }
 
-panelCloseBtn.addEventListener('click', exitCornerMode);
 
-// Settings Key Configuration via Inline Input
-settingsBtn.addEventListener('click', () => {
-  companionStatus.textContent = 'API Key Config';
-  companionSpeech.innerHTML = `
-    <input type="text" id="inlineInput" placeholder="Paste Gemini API Key..." autofocus>
-  `;
-  const input = document.getElementById('inlineInput');
-  input.focus();
-  input.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      const val = input.value.trim();
-      if (val) {
-        geminiApiKey = val;
-        localStorage.setItem('dabsy_gemini_key', geminiApiKey);
-        setMood('happy', 'DABSy Online', 'API Key saved successfully!');
+/* =========================================================
+   SPEECH RECOGNITION
+========================================================= */
+
+function setupSpeechRecognition() {
+
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+
+  if (!SpeechRecognition) {
+
+    console.warn(
+      "Speech Recognition not supported."
+    );
+
+    return;
+
+  }
+
+
+  recognition =
+    new SpeechRecognition();
+
+
+  recognition.lang =
+    "en-IN";
+
+
+  recognition.continuous =
+    false;
+
+
+  recognition.interimResults =
+    false;
+
+
+  recognition.onstart = () => {
+
+    listening = true;
+
+    talkButton.classList.add(
+      "listening"
+    );
+
+    talkText.textContent =
+      "Listening...";
+
+    micIcon.textContent =
+      "🔴";
+
+
+    setMood(
+      "listening",
+      "Listening...",
+      "I'm listening."
+    );
+
+  };
+
+
+  recognition.onresult =
+    event => {
+
+      const result =
+        event.results?.[0]?.[0]
+          ?.transcript
+          ?.trim();
+
+
+      if (!result) {
+        return;
+      }
+
+
+      askDABSy(result);
+
+    };
+
+
+  recognition.onerror =
+    event => {
+
+      console.error(
+        "Speech error:",
+        event.error
+      );
+
+
+      if (
+        event.error ===
+        "not-allowed"
+      ) {
+
+        setMood(
+          "error",
+          "Microphone Blocked",
+          "Please allow microphone access in your browser."
+        );
+
       } else {
-        setMood('happy', 'DABSy Online', 'Cancelled.');
+
+        setMood(
+          "error",
+          "Didn't catch that",
+          "Try speaking again."
+        );
+
       }
+
+    };
+
+
+  recognition.onend = () => {
+
+    listening = false;
+
+    talkButton.classList.remove(
+      "listening"
+    );
+
+    talkText.textContent =
+      "Talk to DABSy";
+
+    micIcon.textContent =
+      "🎙";
+
+  };
+
+}
+
+
+/* =========================================================
+   TALK BUTTON
+========================================================= */
+
+talkButton.addEventListener(
+  "click",
+  () => {
+
+    if (!apiKey) {
+
+      showAPISetup();
+
+      return;
+
     }
-  });
-});
 
-// Talk Button transforms the speech bubble directly into a typing bar
-talkBtn.addEventListener('click', () => {
-  if (!geminiApiKey) {
-    settingsBtn.click();
-    return;
+
+    if (!recognition) {
+
+      showTextInput();
+
+      return;
+
+    }
+
+
+    if (listening) {
+
+      recognition.stop();
+
+      return;
+
+    }
+
+
+    try {
+
+      recognition.start();
+
+    } catch (error) {
+
+      console.error(error);
+
+      showTextInput();
+
+    }
+
   }
+);
 
-  companionStatus.textContent = 'Ask DABSy';
-  companionSpeech.innerHTML = `
-    <input type="text" id="inlineInput" placeholder="Ask physics, math, chemistry..." autofocus>
+
+/* =========================================================
+   API KEY
+========================================================= */
+
+settingsButton.addEventListener(
+  "click",
+  showAPISetup
+);
+
+
+function showAPISetup() {
+
+  setMood(
+    "happy",
+    "Gemini Setup",
+    "Connect my Gemini brain to start talking with me."
+  );
+
+
+  speech.innerHTML = `
+
+    <form
+      id="apiForm"
+      class="ask-form"
+    >
+
+      <input
+        id="apiInput"
+        type="password"
+        placeholder="Paste Gemini API key..."
+        autocomplete="off"
+      >
+
+      <button>
+        ✓
+      </button>
+
+    </form>
+
   `;
-  const input = document.getElementById('inlineInput');
-  input.focus();
-  input.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      const query = input.value.trim();
-      if (query) {
-        processWithGemini(query.toLowerCase());
-      }
-    }
-  });
-});
 
-// --- AI BRAIN INTEGRATION ---
-async function processWithGemini(userPrompt) {
-  if (userPrompt.includes("i'm done") || userPrompt.includes("im done") || userPrompt.includes("done") || userPrompt.includes("close")) {
-    exitCornerMode();
+
+  const form =
+    $("apiForm");
+
+  const input =
+    $("apiInput");
+
+
+  input.value =
+    apiKey;
+
+
+  input.focus();
+
+
+  form.addEventListener(
+    "submit",
+    event => {
+
+      event.preventDefault();
+
+
+      const value =
+        input.value.trim();
+
+
+      if (!value) {
+        return;
+      }
+
+
+      apiKey =
+        value;
+
+
+      localStorage.setItem(
+        "dabsy_gemini_key",
+        apiKey
+      );
+
+
+      setMood(
+        "happy",
+        "Gemini Connected",
+        "My brain is online. Talk to me."
+      );
+
+
+      speak(
+        "My Gemini brain is online. Talk to me."
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   TEXT FALLBACK
+========================================================= */
+
+function showTextInput() {
+
+  speech.innerHTML = `
+
+    <form
+      id="askForm"
+      class="ask-form"
+    >
+
+      <input
+        id="askInput"
+        placeholder="Ask DABSy anything..."
+        autocomplete="off"
+      >
+
+      <button>
+        ➤
+      </button>
+
+    </form>
+
+  `;
+
+
+  const form =
+    $("askForm");
+
+  const input =
+    $("askInput");
+
+
+  input.focus();
+
+
+  form.addEventListener(
+    "submit",
+    event => {
+
+      event.preventDefault();
+
+
+      const question =
+        input.value.trim();
+
+
+      if (question) {
+
+        askDABSy(question);
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   STUDY MODE
+========================================================= */
+
+studyButton.addEventListener(
+  "click",
+  () => {
+
+    studyMode =
+      !studyMode;
+
+
+    localStorage.setItem(
+      "dabsy_study_mode",
+      studyMode
+    );
+
+
+    updateMode();
+
+
+    if (studyMode) {
+
+      setMood(
+        "study",
+        "Study Mode",
+        "Study mode activated. Let's figure this out together."
+      );
+
+      speak(
+        "Study mode activated. Let's figure this out together."
+      );
+
+    } else {
+
+      setMood(
+        "happy",
+        "Normal Mode",
+        "Back to normal mode."
+      );
+
+    }
+
+  }
+);
+
+
+function updateMode() {
+
+  if (studyMode) {
+
+    modeIndicator.textContent =
+      "📚 Study Mode";
+
+    studyButton.classList.add(
+      "active"
+    );
+
+  } else {
+
+    modeIndicator.textContent =
+      "Normal Mode";
+
+    studyButton.classList.remove(
+      "active"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   GEMINI
+========================================================= */
+
+async function askDABSy(question) {
+
+  if (!apiKey) {
+
+    showAPISetup();
+
+    return;
+
+  }
+
+
+  const userQuestion =
+    String(question).trim();
+
+
+  if (!userQuestion) {
     return;
   }
 
-  setMood('thinking', 'Neural Processing...', `Thinking about "${userPrompt}"...`);
+
+  setMood(
+    "thinking",
+    "Thinking...",
+    "Give me a second..."
+  );
+
 
   try {
-    const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-    
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: `You are DABSy, an elite AI desk study buddy for a Class 11 Science student in India. 
-      The user asked: "${userPrompt}". 
-      Provide a smart, accurate, step-by-step breakdown or answer. 
-      Format your response strictly as JSON with two fields: 
-      1. "spoken_summary": A short, friendly 1-2 sentence summary to be spoken out loud.
-      2. "steps": An array of objects, each containing "title" and "content" for the step-by-step breakdown card.`
-    });
 
-    const rawText = response.text;
-    const cleanJsonText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-    const parsedData = JSON.parse(cleanJsonText);
+    const ai =
+      new GoogleGenAI({
+        apiKey: apiKey
+      });
 
-    setMood('study', 'Study Breakdown', parsedData.spoken_summary);
 
-    let stepsHTML = '';
-    parsedData.steps.forEach((step, idx) => {
-      stepsHTML += `
-        <div class="step-card">
-          <strong>Step ${idx + 1}: ${step.title}</strong>
-          ${step.content}
-        </div>
-      `;
-    });
-    stepsHTML += `
-      <div class="step-card" style="text-align: center; color: var(--text-muted);">
-        Type "I'm done" or click the close button when ready to return!
-      </div>
-    `;
+    const systemInstruction =
+      `
 
-    enterCornerMode(`Breakdown: ${userPrompt}`, stepsHTML);
+You are D.A.B.S.y.
+
+You are an AI desk companion and study buddy.
+
+Your personality:
+- friendly
+- intelligent
+- calm
+- slightly playful
+- concise when the question is simple
+- detailed when teaching
+- never robotic
+
+The student is in Class 11 Science in India.
+
+Current mode:
+${studyMode ? "STUDY MODE" : "NORMAL MODE"}
+
+If STUDY MODE:
+- teach instead of dumping an answer
+- explain concepts clearly
+- use steps
+- show formulas when useful
+- explain why each step works
+- make difficult topics understandable
+
+If NORMAL MODE:
+- behave like a general AI desk companion
+- answer naturally
+- still help with schoolwork when asked
+
+Return ONLY valid JSON.
+
+Format:
+
+{
+  "spoken_summary": "A short natural sentence DABSy can say aloud.",
+  "answer": "The complete useful answer.",
+  "steps": [
+    {
+      "title": "Step title",
+      "content": "Explanation"
+    }
+  ]
+}
+
+For casual conversation, steps may be an empty array.
+
+Do not use HTML.
+Do not use markdown fences.
+`;
+
+
+    const contents = [
+
+      ...conversation.slice(-10),
+
+      {
+        role: "user",
+
+        parts: [
+          {
+            text:
+              userQuestion
+          }
+        ]
+
+      }
+
+    ];
+
+
+    const response =
+      await ai.models.generateContent({
+
+        model:
+          "gemini-2.5-flash",
+
+        contents,
+
+        config: {
+
+          systemInstruction,
+
+          temperature:
+            0.7,
+
+          responseMimeType:
+            "application/json"
+
+        }
+
+      });
+
+
+    let raw =
+      typeof response.text ===
+      "function"
+
+        ? response.text()
+
+        : response.text;
+
+
+    raw =
+      String(raw || "")
+        .replace(
+          /^```json\s*/i,
+          ""
+        )
+        .replace(
+          /\s*```$/,
+          ""
+        )
+        .trim();
+
+
+    let data;
+
+
+    try {
+
+      data =
+        JSON.parse(raw);
+
+    } catch {
+
+      data = {
+
+        spoken_summary:
+          raw.slice(0, 300),
+
+        answer:
+          raw,
+
+        steps: []
+
+      };
+
+    }
+
+
+    conversation.push(
+
+      {
+        role: "user",
+
+        parts: [
+          {
+            text:
+              userQuestion
+          }
+        ]
+      },
+
+      {
+        role: "model",
+
+        parts: [
+          {
+            text:
+              raw
+          }
+        ]
+      }
+
+    );
+
+
+    const summary =
+      data.spoken_summary ||
+      data.answer ||
+      "I've got an answer for you.";
+
+
+    renderResponse(
+      userQuestion,
+      data
+    );
+
+
+    setMood(
+      studyMode
+        ? "study"
+        : "happy",
+
+      studyMode
+        ? "Study Response"
+        : "DABSy Responding",
+
+      summary
+    );
+
+
+    speak(summary);
+
 
   } catch (error) {
-    console.error(error);
-    setMood('happy', 'DABSy Online', `Error communicating with Gemini. Check your API key.`);
+
+    console.error(
+      "DABSy Gemini error:",
+      error
+    );
+
+
+    const message =
+      String(
+        error?.message || error
+      );
+
+
+    let friendly =
+      "I couldn't reach Gemini. Check your internet connection and API key.";
+
+
+    if (
+      /401|403|api.?key|permission|unauthorized/i
+        .test(message)
+    ) {
+
+      friendly =
+        "Your Gemini API key was rejected. Open the settings button and check it.";
+
+    }
+
+
+    if (
+      /429|quota|rate/i
+        .test(message)
+    ) {
+
+      friendly =
+        "Gemini is temporarily rate limiting this key. Try again shortly.";
+
+    }
+
+
+    setMood(
+      "error",
+      "Gemini Error",
+      friendly
+    );
+
+
+    speak(
+      friendly
+    );
+
   }
+
 }
+
+
+/* =========================================================
+   RESPONSE PRESENTATION
+========================================================= */
+
+function renderResponse(
+  question,
+  data
+) {
+
+  panelTitle.textContent =
+    question;
+
+
+  let html = "";
+
+
+  if (
+    Array.isArray(data.steps) &&
+    data.steps.length > 0
+  ) {
+
+    data.steps.forEach(
+      (step, index) => {
+
+        html += `
+
+          <article
+            class="step-card"
+          >
+
+            <strong>
+              Step ${index + 1}
+              ·
+              ${escapeHTML(
+                step.title ||
+                "Explanation"
+              )}
+            </strong>
+
+            <div>
+              ${escapeHTML(
+                step.content ||
+                ""
+              ).replace(
+                /\n/g,
+                "<br>"
+              )}
+            </div>
+
+          </article>
+
+        `;
+
+      }
+    );
+
+
+    if (data.answer) {
+
+      html += `
+
+        <article
+          class="step-card"
+        >
+
+          <strong>
+            Answer
+          </strong>
+
+          <div>
+            ${escapeHTML(
+              data.answer
+            ).replace(
+              /\n/g,
+              "<br>"
+            )}
+          </div>
+
+        </article>
+
+      `;
+
+    }
+
+  } else {
+
+    html = `
+
+      <article
+        class="step-card"
+      >
+
+        <div>
+          ${escapeHTML(
+            data.answer ||
+            data.spoken_summary ||
+            ""
+          ).replace(
+            /\n/g,
+            "<br>"
+          )}
+        </div>
+
+      </article>
+
+    `;
+
+  }
+
+
+  panelContent.innerHTML =
+    html;
+
+
+  panel.classList.add(
+    "visible"
+  );
+
+}
+
+
+/* =========================================================
+   SECURITY
+========================================================= */
+
+function escapeHTML(value) {
+
+  return String(value ?? "")
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
+}
+
+
+/* =========================================================
+   CLOSE ANSWER
+========================================================= */
+
+closePanel.addEventListener(
+  "click",
+  () => {
+
+    panel.classList.remove(
+      "visible"
+    );
+
+
+    setMood(
+      studyMode
+        ? "study"
+        : "happy",
+
+      studyMode
+        ? "Study Mode"
+        : "DABSy Online",
+
+      "What shall we do next?"
+    );
+
+  }
+);
+
+
+/* =========================================================
+   SERVICE WORKER
+========================================================= */
+
+if (
+  "serviceWorker" in navigator
+) {
+
+  window.addEventListener(
+    "load",
+    () => {
+
+      navigator.serviceWorker
+        .register("./sw.js")
+        .catch(
+          console.error
+        );
+
+    }
+  );
+
+  }
