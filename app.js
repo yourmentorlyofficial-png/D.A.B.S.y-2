@@ -37,10 +37,9 @@ const panelContentArea = document.getElementById('panelContentArea');
 const panelCloseBtn = document.getElementById('panelCloseBtn');
 const talkBtn = document.getElementById('talkBtn');
 const talkBtnText = document.getElementById('talkBtnText');
-const modeToggleBtn = document.getElementById('modeToggleBtn');
-const modeNameDisplay = document.getElementById('modeNameDisplay');
+const settingsBtn = document.getElementById('settingsBtn');
 
-let currentMode = 'fun';
+let geminiApiKey = localStorage.getItem('dabsy_gemini_key') || '';
 let isCornerModeActive = false;
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -95,13 +94,34 @@ function enterCornerMode(title, htmlContent) {
 function exitCornerMode() {
   isCornerModeActive = false;
   document.body.classList.remove('corner-mode');
-  setMood(currentMode === 'study' ? 'study' : 'happy', currentMode === 'study' ? 'Study Active' : 'Fun Pet Mode', 'Welcome back! Let me know if you need anything else.');
+  setMood('happy', 'DABSy Online', 'Welcome back! Let me know if you need anything else.');
 }
 
 panelCloseBtn.addEventListener('click', exitCornerMode);
 
-// Robust Input Handler with Text Fallback Prompt
+// Settings Button to Configure Gemini API Key
+settingsBtn.addEventListener('click', () => {
+  const newKey = prompt('Enter your Google Gemini API Key (saved securely in your browser):', geminiApiKey);
+  if (newKey !== null) {
+    geminiApiKey = newKey.trim();
+    localStorage.setItem('dabsy_gemini_key', geminiApiKey);
+    alert(geminiApiKey ? 'Gemini API Key saved successfully!' : 'API Key cleared.');
+  }
+});
+
+// Input Handler (Speech or Text Prompt)
 function triggerInputFlow() {
+  if (!geminiApiKey) {
+    const key = prompt('Please enter your Google Gemini API Key to enable smart AI responses:');
+    if (key) {
+      geminiApiKey = key.trim();
+      localStorage.setItem('dabsy_gemini_key', geminiApiKey);
+    } else {
+      alert('API Key is required for smart responses.');
+      return;
+    }
+  }
+
   if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     try {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -111,33 +131,33 @@ function triggerInputFlow() {
 
       recognition.onstart = () => {
         talkBtnText.textContent = 'Listening...';
-        setMood('thinking', 'Listening...', 'I am listening to your request, Swagat.');
+        setMood('thinking', 'Listening...', 'I am listening...');
       };
 
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript.toLowerCase();
         talkBtnText.textContent = 'Talk to DABSy';
-        handleUserCommand(transcript);
+        processWithGemini(transcript);
       };
 
       recognition.onerror = () => {
         talkBtnText.textContent = 'Talk to DABSy';
-        fallbackToPrompt();
+        fallbackToTextPrompt();
       };
 
       recognition.start();
     } catch (e) {
-      fallbackToPrompt();
+      fallbackToTextPrompt();
     }
   } else {
-    fallbackToPrompt();
+    fallbackToTextPrompt();
   }
 }
 
-function fallbackToPrompt() {
-  const query = prompt('Type your study question or command for DABSy (e.g., "explain physics", "study mode", "i am done"):');
+function fallbackToTextPrompt() {
+  const query = prompt('Type your study question or command for DABSy:');
   if (query) {
-    handleUserCommand(query.toLowerCase());
+    processWithGemini(query.toLowerCase());
   } else {
     setMood('happy', 'DABSy Online', 'Ready when you are!');
   }
@@ -145,64 +165,62 @@ function fallbackToPrompt() {
 
 talkBtn.addEventListener('click', triggerInputFlow);
 
-function handleUserCommand(cmd) {
-  setMood('thinking', 'Analyzing...', `Processing "${cmd}"...`);
+// --- REAL SMART GEMINI API INTEGRATION ---
+async function processWithGemini(userPrompt) {
+  if (userPrompt.includes("i'm done") || userPrompt.includes("im done") || userPrompt.includes("done") || userPrompt.includes("close")) {
+    exitCornerMode();
+    return;
+  }
 
-  setTimeout(() => {
-    if (cmd.includes("i'm done") || cmd.includes("im done") || cmd.includes("done") || cmd.includes("close")) {
-      exitCornerMode();
-      return;
-    }
+  setMood('thinking', 'Neural Processing...', `Thinking about "${userPrompt}"...`);
 
-    if (cmd.includes('study mode') || cmd.includes('switch to study')) {
-      currentMode = 'study';
-      modeNameDisplay.textContent = 'Study Mode';
-      setMood('study', 'Study Mode Active', 'Study mode engaged. Ready to break down difficult concepts step-by-step.');
-      return;
-    }
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `You are DABSy, an elite AI desk study buddy for a Class 11 Science (PCMB) student in India. 
+            The user asked: "${userPrompt}". 
+            Provide a smart, accurate, step-by-step breakdown or answer. 
+            Format your response strictly as JSON with two fields: 
+            1. "spoken_summary": A short, friendly 1-2 sentence summary to be spoken out loud.
+            2. "steps": An array of objects, each containing "title" and "content" for the step-by-step breakdown card.`
+          }]
+        }]
+      })
+    });
 
-    if (cmd.includes('fun mode') || cmd.includes('switch to fun')) {
-      currentMode = 'fun';
-      modeNameDisplay.textContent = 'Fun Mode';
-      setMood('happy', 'Fun Pet Mode', 'Yay! Let us chill or have some fun together.');
-      return;
-    }
+    const data = await response.json();
+    const rawText = data.candidates[0].content.parts[0].text;
+    
+    // Clean JSON response from markdown wrappers if present
+    const cleanJsonText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const parsedData = JSON.parse(cleanJsonText);
 
-    if (currentMode === 'study' || cmd.includes('explain') || cmd.includes('solve') || cmd.includes('physics') || cmd.includes('math') || cmd.includes('chemistry')) {
-      setMood('study', 'Explaining...', 'Breaking this down into simple steps for you.');
-      
-      let conceptTitle = `Breakdown: ${cmd}`;
-      let stepsHTML = `
+    // Trigger Study Mode & Corner Presentation
+    setMood('study', 'Study Breakdown', parsedData.spoken_summary);
+
+    let stepsHTML = '';
+    parsedData.steps.forEach((step, idx) => {
+      stepsHTML += `
         <div class="step-card">
-          <strong>Step 1: Core Definition & Concept</strong>
-          Analyzing "${cmd}". We establish the foundational principles clearly and concisely.
-        </div>
-        <div class="step-card">
-          <strong>Step 2: Step-by-Step Derivation</strong>
-          Applying logical formulas and step-by-step reasoning without skipping key details.
-        </div>
-        <div class="step-card">
-          <strong>Step 3: Conclusion & Summary</strong>
-          Review complete. Say or type "Ya DABSy, I'm done" whenever you are ready to return to full screen!
+          <strong>Step ${idx + 1}: ${step.title}</strong>
+          ${step.content}
         </div>
       `;
+    });
+    stepsHTML += `
+      <div class="step-card" style="text-align: center; color: var(--text-muted);">
+        Say or type "I'm done" when you are ready to return!
+      </div>
+    `;
 
-      enterCornerMode(conceptTitle, stepsHTML);
-      speakText('Here is the step-by-step breakdown for your study session.');
-    } else {
-      setMood('happy', 'Fun Pet Mode', `That sounds fun! As your desk pet, I'm right here with you.`);
-    }
-  }, 900);
-}
+    enterCornerMode(`Breakdown: ${userPrompt}`, stepsHTML);
 
-modeToggleBtn.addEventListener('click', () => {
-  if (currentMode === 'fun') {
-    currentMode = 'study';
-    modeNameDisplay.textContent = 'Study Mode';
-    setMood('study', 'Study Mode Active', 'Switched to Study Mode. I will present step-by-step notes.');
-  } else {
-    currentMode = 'fun';
-    modeNameDisplay.textContent = 'Fun Mode';
-    setMood('happy', 'Fun Pet Mode', 'Switched to Fun Mode. Ready to chill!');
+  } catch (error) {
+    console.error(error);
+    setMood('happy', 'DABSy Online', `I processed your request, but encountered a connection error. Check your API key in settings.`);
   }
-});
+}
