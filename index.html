@@ -9,10 +9,8 @@
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <!-- Ambient Aura -->
   <div class="ambient-aura" id="ambientAura"></div>
 
-  <!-- PWA Install Overlay -->
   <div id="installCard" class="install-banner">
     <div>
       <strong>Install DABSy</strong>
@@ -21,10 +19,7 @@
     <button id="installBtn">Install</button>
   </div>
 
-  <!-- Master Stage -->
   <div class="stage">
-    
-    <!-- Living Face Component -->
     <div class="face-container" id="faceContainer" title="Tap to interact">
       <div class="face-features">
         <div class="eyes-row">
@@ -40,18 +35,14 @@
       </div>
     </div>
 
-    <!-- Presentation Panel (Slides up in Corner Mode for Notes/Images) -->
     <div class="presentation-panel" id="presentationPanel">
       <div class="panel-header">
         <span class="panel-title" id="panelTitle">Study Breakdown</span>
         <button class="panel-close-btn" id="panelCloseBtn">✕</button>
       </div>
-      <div id="panelContentArea" style="display: flex; flex-direction: column; gap: 12px;">
-        <!-- Dynamic Step Cards injected here -->
-      </div>
+      <div id="panelContentArea" style="display: flex; flex-direction: column; gap: 12px;"></div>
     </div>
 
-    <!-- Floating Voice Control Bar -->
     <div class="floating-control-bar">
       <button class="action-pill primary" id="talkBtn">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
@@ -62,7 +53,6 @@
         <span id="modeNameDisplay">Fun Mode</span>
       </button>
     </div>
-
   </div>
 
   <script src="./app.js"></script>
