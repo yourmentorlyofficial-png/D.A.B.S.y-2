@@ -1,6 +1,6 @@
 :root {
   --bg-color: #03050a;
-  --surface: rgba(12, 18, 32, 0.85);
+  --surface: rgba(12, 18, 32, 0.88);
   --border: rgba(255, 255, 255, 0.08);
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
@@ -216,26 +216,20 @@ body.corner-mode .presentation-panel {
   color: var(--text-main);
 }
 
-.step-card strong {
-  color: var(--accent);
-  display: block;
-  margin-bottom: 4px;
-}
-
 .floating-control-bar {
   position: absolute;
   bottom: 30px;
   display: flex;
-  gap: 12px;
+  gap: 10px;
   z-index: 40;
-  transition: var(--transition);
+  align-items: center;
 }
 
 .action-pill {
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text-main);
-  padding: 12px 24px;
+  padding: 12px 20px;
   border-radius: 30px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -254,7 +248,22 @@ body.corner-mode .presentation-panel {
   box-shadow: 0 8px 25px var(--primary-glow);
 }
 
-.action-pill:active {
+.icon-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.action-pill:active, .icon-btn:active {
   transform: scale(0.92);
 }
 
