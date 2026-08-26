@@ -1,3 +1,5 @@
+import { GoogleGenAI } from 'https://cdn.jsdelivr.net/npm/@google/genai@2.17.1/+esm';
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').catch((err) => console.error(err));
@@ -39,6 +41,7 @@ const talkBtn = document.getElementById('talkBtn');
 const talkBtnText = document.getElementById('talkBtnText');
 const settingsBtn = document.getElementById('settingsBtn');
 
+// Key is stored securely in browser LocalStorage — NO SECRETS LEAKED TO GITHUB!
 let geminiApiKey = localStorage.getItem('dabsy_gemini_key') || '';
 let isCornerModeActive = false;
 
@@ -99,20 +102,18 @@ function exitCornerMode() {
 
 panelCloseBtn.addEventListener('click', exitCornerMode);
 
-// Settings Button to Configure Gemini API Key
 settingsBtn.addEventListener('click', () => {
-  const newKey = prompt('Enter your Google Gemini API Key (starts with AQ...):', geminiApiKey);
+  const newKey = prompt('Enter your Google Gemini API Key (stored safely in your browser):', geminiApiKey);
   if (newKey !== null) {
     geminiApiKey = newKey.trim();
     localStorage.setItem('dabsy_gemini_key', geminiApiKey);
-    alert(geminiApiKey ? 'Gemini API Key saved successfully!' : 'API Key cleared.');
+    alert(geminiApiKey ? 'API Key saved securely on your device!' : 'API Key cleared.');
   }
 });
 
-// Input Handler (Speech or Text Prompt)
 function triggerInputFlow() {
   if (!geminiApiKey) {
-    const key = prompt('Please enter your Google Gemini API Key (AQ...):');
+    const key = prompt('Please enter your Google Gemini API Key (stored securely in browser):');
     if (key) {
       geminiApiKey = key.trim();
       localStorage.setItem('dabsy_gemini_key', geminiApiKey);
@@ -165,7 +166,6 @@ function fallbackToTextPrompt() {
 
 talkBtn.addEventListener('click', triggerInputFlow);
 
-// --- REAL SMART GEMINI API INTEGRATION (Using X-goog-api-key header for AQ keys) ---
 async function processWithGemini(userPrompt) {
   if (userPrompt.includes("i'm done") || userPrompt.includes("im done") || userPrompt.includes("done") || userPrompt.includes("close")) {
     exitCornerMode();
@@ -175,32 +175,19 @@ async function processWithGemini(userPrompt) {
   setMood('thinking', 'Neural Processing...', `Thinking about "${userPrompt}"...`);
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-goog-api-key': geminiApiKey
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `You are DABSy, an elite AI desk study buddy for a Class 11 Science (PCMB) student in India. 
-            The user asked: "${userPrompt}". 
-            Provide a smart, accurate, step-by-step breakdown or answer. 
-            Format your response strictly as JSON with two fields: 
-            1. "spoken_summary": A short, friendly 1-2 sentence summary to be spoken out loud.
-            2. "steps": An array of objects, each containing "title" and "content" for the step-by-step breakdown card.`
-          }]
-        }]
-      })
+    const ai = new GoogleGenAI({ apiKey: geminiApiKey });
+    
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `You are DABSy, an elite AI desk study buddy for a Class 11 Science student in India. 
+      The user asked: "${userPrompt}". 
+      Provide a smart, accurate, step-by-step breakdown or answer. 
+      Format your response strictly as JSON with two fields: 
+      1. "spoken_summary": A short, friendly 1-2 sentence summary to be spoken out loud.
+      2. "steps": An array of objects, each containing "title" and "content" for the step-by-step breakdown card.`
     });
 
-    const data = await response.json();
-    if (data.error) {
-      throw new Error(data.error.message || 'API Error');
-    }
-
-    const rawText = data.candidates[0].content.parts[0].text;
+    const rawText = response.text;
     const cleanJsonText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
     const parsedData = JSON.parse(cleanJsonText);
 
