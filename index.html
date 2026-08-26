@@ -9,80 +9,80 @@
   >
 
   <meta name="theme-color" content="#000000">
-  <meta name="description" content="DABSy, your AI desk and study companion.">
-
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="DABSy AI desk and study companion">
 
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="./icon.svg">
-
-  <link rel="stylesheet" href="./styles.css">
 
   <title>DABSy</title>
+
+  <link rel="stylesheet" href="./styles.css">
 </head>
 
 <body>
 
-  <main id="app">
+  <main id="dabsy">
 
-    <section id="face" aria-label="DABSy AI companion">
+    <div id="face">
 
-      <div id="ambientGlow"></div>
+      <div id="glow"></div>
 
       <div id="eyes">
 
         <div class="eye" id="leftEye">
+          <div class="iris"></div>
           <div class="pupil"></div>
-          <div class="eyeGlow"></div>
+          <div class="shine"></div>
         </div>
 
         <div class="eye" id="rightEye">
+          <div class="iris"></div>
           <div class="pupil"></div>
-          <div class="eyeGlow"></div>
+          <div class="shine"></div>
         </div>
 
       </div>
 
-      <div id="speechArea">
+      <div id="speechBox">
+
         <div id="status">DABSy</div>
-        <div id="speech">Hello. I'm here.</div>
+
+        <div id="speech">
+          Hello. I'm here.
+        </div>
+
       </div>
 
       <div id="hint">
-        tap to talk • double-tap for DABSy
+        tap to talk · double-tap for DABSy
       </div>
 
       <div id="heart">♥</div>
 
-      <div id="touchRipple"></div>
-
-    </section>
+    </div>
 
 
-    <!-- FLOATING BUBBLE MENU -->
+    <!-- BUBBLE MENU -->
 
-    <div id="bubbleMenu">
+    <div id="menu">
 
-      <button class="bubble" id="studyButton">
+      <button id="studyBubble" class="bubble">
         <span>📚</span>
         <small>Study</small>
       </button>
 
-      <button class="bubble" id="settingsButton">
-        <span>⚙</span>
+      <button id="settingsBubble" class="bubble">
+        <span>⚙️</span>
         <small>Settings</small>
       </button>
 
-      <button class="bubble" id="installButton">
+      <button id="installBubble" class="bubble">
         <span>↓</span>
         <small>Install</small>
       </button>
 
-      <button class="bubble closeBubble" id="closeMenuButton">
-        <span>×</span>
+      <button id="closeBubble" class="bubble close">
+        ×
       </button>
 
     </div>
@@ -90,85 +90,93 @@
 
     <!-- SETTINGS -->
 
-    <div class="overlay" id="settingsOverlay">
+    <div id="settings" class="panel">
 
-      <div class="glassSheet">
+      <div class="sheet">
 
-        <div class="sheetHeader">
-          <h2>DABSy</h2>
-          <button id="closeSettings">×</button>
+        <div class="sheetTop">
+
+          <strong>DABSy</strong>
+
+          <button id="closeSettings">
+            ×
+          </button>
+
         </div>
 
-        <p class="sheetDescription">
-          DABSy uses a private AI backend.
-          Your Gemini API key is never stored inside this app.
+        <p>
+          DABSy's AI connection runs through
+          your private serverless backend.
         </p>
 
-        <div class="infoCard">
-
-          <span>🔐</span>
-
+        <div class="info">
+          🔐
           <div>
-            <strong>Private AI connection</strong>
+            <strong>Private AI</strong>
             <small>
-              Gemini credentials stay on the secure backend.
+              Your Gemini key is not stored in this app.
             </small>
           </div>
-
         </div>
 
-        <button class="primaryButton" id="testConnection">
+        <button id="testAI" class="mainButton">
           Test AI connection
         </button>
 
-        <div class="settingStatus" id="settingStatus"></div>
+        <div id="connectionStatus"></div>
 
       </div>
 
     </div>
 
 
-    <!-- STUDY MODE -->
+    <!-- STUDY -->
 
-    <div class="overlay" id="studyOverlay">
+    <div id="study" class="panel">
 
-      <div class="glassSheet">
+      <div class="sheet">
 
-        <div class="sheetHeader">
-          <h2>Study Mode</h2>
-          <button id="closeStudy">×</button>
+        <div class="sheetTop">
+
+          <strong>Study Mode</strong>
+
+          <button id="closeStudy">
+            ×
+          </button>
+
         </div>
 
-        <p class="sheetDescription">
-          DABSy becomes a calm, step-by-step tutor.
+        <p>
+          DABSy will explain things step-by-step
+          instead of just throwing an answer at you.
         </p>
 
-        <div class="studyOptions">
+        <div class="subjects">
 
-          <button class="studyOption" data-topic="Physics">
-            <span>⚛️</span>
-            <strong>Physics</strong>
+          <button data-subject="Physics">
+            ⚛️
+            <span>Physics</span>
           </button>
 
-          <button class="studyOption" data-topic="Chemistry">
-            <span>🧪</span>
-            <strong>Chemistry</strong>
+          <button data-subject="Chemistry">
+            🧪
+            <span>Chemistry</span>
           </button>
 
-          <button class="studyOption" data-topic="Mathematics">
-            <span>📐</span>
-            <strong>Maths</strong>
+          <button data-subject="Mathematics">
+            📐
+            <span>Maths</span>
           </button>
 
-          <button class="studyOption" data-topic="Biology">
-            <span>🧬</span>
-            <strong>Biology</strong>
+          <button data-subject="Biology">
+            🧬
+            <span>Biology</span>
           </button>
 
         </div>
 
-        <button class="primaryButton" id="studyTalkButton">
-          🎙️ Talk to DABSy
+        <button id="studyTalk" class="mainButton">
+          🎙️ Ask DABSy
         </button>
 
       </div>
@@ -176,24 +184,25 @@
     </div>
 
 
-    <!-- ANSWER PANEL -->
+    <!-- ANSWER -->
 
-    <div id="answerPanel">
+    <div id="answer">
 
-      <div id="answerHeader">
+      <div id="answerTop">
 
-        <span id="answerTitle">DABSy</span>
+        <strong>DABSy</strong>
 
-        <button id="closeAnswer">×</button>
+        <button id="closeAnswer">
+          ×
+        </button>
 
       </div>
 
-      <div id="answerContent"></div>
+      <div id="answerText"></div>
 
     </div>
 
   </main>
-
 
   <script src="./app.js" defer></script>
 
