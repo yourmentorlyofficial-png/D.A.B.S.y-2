@@ -1,58 +1,43 @@
+"use strict";
+
+/*
+==========================================================
+ DABSy FINAL CORE
+ Private AI backend:
+ https://dabsy-ai.swagatdemo9292.workers.dev
+==========================================================
+*/
+
 const WORKER_URL =
   "https://dabsy-ai.swagatdemo9292.workers.dev";
 
 
-/* =========================================================
-   DABSy CORE
-========================================================= */
+/* ========================================================
+   ELEMENTS
+======================================================== */
 
-const face =
-  document.getElementById("face");
+const face = document.getElementById("face");
+const eyes = document.getElementById("eyes");
 
-const eyes =
-  document.getElementById("eyes");
+const leftEye = document.getElementById("leftEye");
+const rightEye = document.getElementById("rightEye");
 
-const leftEye =
-  document.getElementById("leftEye");
+const leftPupil = leftEye.querySelector(".pupil");
+const rightPupil = rightEye.querySelector(".pupil");
 
-const rightEye =
-  document.getElementById("rightEye");
+const speechArea = document.getElementById("speechArea");
+const statusEl = document.getElementById("status");
+const speechEl = document.getElementById("speech");
 
-const leftPupil =
-  leftEye.querySelector(".pupil");
+const hint = document.getElementById("hint");
+const heart = document.getElementById("heart");
 
-const rightPupil =
-  rightEye.querySelector(".pupil");
+const bubbleMenu = document.getElementById("bubbleMenu");
 
-const status =
-  document.getElementById("status");
-
-const speech =
-  document.getElementById("speech");
-
-const hint =
-  document.getElementById("hint");
-
-const heart =
-  document.getElementById("heart");
-
-
-/* =========================================================
-   UI
-========================================================= */
-
-const bubbleMenu =
-  document.getElementById("bubbleMenu");
-
-const studyButton =
-  document.getElementById("studyButton");
-
-const settingsButton =
-  document.getElementById("settingsButton");
-
-const closeMenuButton =
-  document.getElementById("closeMenuButton");
-
+const studyButton = document.getElementById("studyButton");
+const settingsButton = document.getElementById("settingsButton");
+const installButton = document.getElementById("installButton");
+const closeMenuButton = document.getElementById("closeMenuButton");
 
 const settingsOverlay =
   document.getElementById("settingsOverlay");
@@ -60,204 +45,313 @@ const settingsOverlay =
 const studyOverlay =
   document.getElementById("studyOverlay");
 
-
 const closeSettings =
   document.getElementById("closeSettings");
 
 const closeStudy =
   document.getElementById("closeStudy");
 
+const testConnection =
+  document.getElementById("testConnection");
+
+const settingStatus =
+  document.getElementById("settingStatus");
 
 const studyTalkButton =
   document.getElementById("studyTalkButton");
 
-
 const answerPanel =
   document.getElementById("answerPanel");
 
-const answerContent =
-  document.getElementById("answerContent");
-
 const answerTitle =
   document.getElementById("answerTitle");
+
+const answerContent =
+  document.getElementById("answerContent");
 
 const closeAnswer =
   document.getElementById("closeAnswer");
 
 
-/* =========================================================
+/* ========================================================
    STATE
-========================================================= */
+======================================================== */
 
-let recognition = null;
+let state = "idle";
 
 let listening = false;
-
 let thinking = false;
-
 let speaking = false;
 
 let studyMode = false;
-
 let menuOpen = false;
 
-let lastTap = 0;
+let recognition = null;
 
+let lastTap = 0;
 let tapTimer = null;
 
-let idleTimer = null;
+let pointerDown = false;
+let petTimer = null;
 
-let personalityTimer = null;
+let deferredInstallPrompt = null;
 
 let lastShake = 0;
 
-let petCooldown = false;
-
-let currentEmotion = "calm";
+let speechTimer = null;
 
 
-/* =========================================================
-   PERSONALITY
-========================================================= */
+/* ========================================================
+   HELPERS
+======================================================== */
 
-const emotions = {
+function setState(newState) {
 
-  calm() {
+  state = newState;
 
-    resetEyes();
-
-  },
-
-
-  happy() {
-
-    leftEye.style.transform =
-      "scaleY(.78) translateY(-4px)";
-
-    rightEye.style.transform =
-      "scaleY(.78) translateY(-4px)";
-
-  },
-
-
-  curious() {
-
-    leftEye.style.transform =
-      "rotate(-7deg) scaleY(.94)";
-
-    rightEye.style.transform =
-      "rotate(7deg) scaleY(1.08)";
-
-  },
-
-
-  thinking() {
-
-    leftEye.style.transform =
-      "translateY(-7px) scale(.94)";
-
-    rightEye.style.transform =
-      "translateY(7px) scale(1.04)";
-
-  },
-
-
-  confused() {
-
-    leftEye.style.transform =
-      "rotate(9deg) scaleY(.88)";
-
-    rightEye.style.transform =
-      "rotate(-9deg) scaleY(1.08)";
-
-  },
-
-
-  excited() {
-
-    leftEye.style.transform =
-      "scale(1.12)";
-
-    rightEye.style.transform =
-      "scale(1.12)";
-
-  },
-
-
-  sleepy() {
-
-    leftEye.style.transform =
-      "scaleY(.38)";
-
-    rightEye.style.transform =
-      "scaleY(.38)";
-
-  }
-
-};
-
-
-/* =========================================================
-   EMOTION ENGINE
-========================================================= */
-
-function setEmotion(
-  emotion
-) {
-
-  if (!emotions[emotion]) {
-
-    emotion = "calm";
-
-  }
-
-
-  currentEmotion =
-    emotion;
-
-
-  Object.values(
-    emotions
-  ).forEach(
-    () => {}
+  document.body.classList.remove(
+    "state-idle",
+    "state-curious",
+    "state-listening",
+    "state-thinking",
+    "state-speaking",
+    "state-happy",
+    "state-excited",
+    "state-confused",
+    "state-sleepy",
+    "state-dizzy",
+    "state-shaken"
   );
 
+  document.body.classList.add(
+    `state-${newState}`
+  );
 
-  emotions[
-    emotion
-  ]();
-
+  updateEyesForState(newState);
 }
 
 
-/* =========================================================
-   EYE RESET
-========================================================= */
-
-function resetEyes() {
+function updateEyesForState(current) {
 
   leftEye.style.transform = "";
-
   rightEye.style.transform = "";
 
+  leftEye.style.height = "";
+  rightEye.style.height = "";
+
+  leftEye.style.borderRadius = "";
+  rightEye.style.borderRadius = "";
+
+  switch (current) {
+
+    case "curious":
+
+      leftEye.style.transform =
+        "rotate(-5deg) scaleY(1.04)";
+
+      rightEye.style.transform =
+        "rotate(5deg) scaleY(.92)";
+
+      break;
+
+
+    case "listening":
+
+      leftEye.style.transform =
+        "scale(1.08)";
+
+      rightEye.style.transform =
+        "scale(1.08)";
+
+      break;
+
+
+    case "thinking":
+
+      leftEye.style.transform =
+        "translateY(-7px) rotate(-3deg)";
+
+      rightEye.style.transform =
+        "translateY(7px) rotate(3deg)";
+
+      break;
+
+
+    case "speaking":
+
+      leftEye.style.transform =
+        "scaleY(1.06)";
+
+      rightEye.style.transform =
+        "scaleY(1.06)";
+
+      break;
+
+
+    case "happy":
+
+      leftEye.style.height = "60%";
+      rightEye.style.height = "60%";
+
+      leftEye.style.borderRadius =
+        "50% 50% 70% 70%";
+
+      rightEye.style.borderRadius =
+        "50% 50% 70% 70%";
+
+      break;
+
+
+    case "excited":
+
+      leftEye.style.transform =
+        "scale(1.13)";
+
+      rightEye.style.transform =
+        "scale(1.13)";
+
+      break;
+
+
+    case "confused":
+
+      leftEye.style.transform =
+        "rotate(9deg)";
+
+      rightEye.style.transform =
+        "rotate(-7deg)";
+
+      break;
+
+
+    case "sleepy":
+
+      leftEye.style.transform =
+        "scaleY(.42)";
+
+      rightEye.style.transform =
+        "scaleY(.42)";
+
+      break;
+
+
+    case "dizzy":
+
+      break;
+
+
+    default:
+
+      break;
+  }
 }
 
 
-/* =========================================================
-   NATURAL BLINKING
-========================================================= */
+function showMessage(
+  message,
+  label = "DABSy",
+  temporary = true
+) {
 
-function randomBlink() {
+  statusEl.textContent = label;
+  speechEl.textContent = message;
+
+  face.classList.add("showSpeech");
+
+  if (temporary) {
+
+    clearTimeout(speechTimer);
+
+    speechTimer = setTimeout(() => {
+
+      if (!listening && !thinking && !speaking) {
+
+        face.classList.remove(
+          "showSpeech"
+        );
+
+      }
+
+    }, 5000);
+  }
+}
+
+
+/* ========================================================
+   SPEECH
+======================================================== */
+
+function speak(text) {
+
+  if (!text) return;
+
+  if (!("speechSynthesis" in window)) {
+
+    return;
+  }
+
+  speechSynthesis.cancel();
+
+  const utterance =
+    new SpeechSynthesisUtterance(text);
+
+  utterance.lang = "en-IN";
+  utterance.rate = 1.0;
+  utterance.pitch = 1.05;
+  utterance.volume = 1;
+
+  utterance.onstart = () => {
+
+    speaking = true;
+
+    setState("speaking");
+
+    face.classList.add(
+      "showSpeech"
+    );
+  };
+
+  utterance.onend = () => {
+
+    speaking = false;
+
+    if (!listening && !thinking) {
+
+      setState("idle");
+
+    }
+  };
+
+  utterance.onerror = () => {
+
+    speaking = false;
+
+    setState("idle");
+  };
+
+  speechSynthesis.speak(
+    utterance
+  );
+}
+
+
+/* ========================================================
+   BLINK
+======================================================== */
+
+function blink(
+  duration = 120
+) {
 
   if (
     listening ||
-    thinking
+    thinking ||
+    speaking ||
+    menuOpen
   ) {
 
     return;
-
   }
-
 
   leftEye.style.transform =
     "scaleY(.08)";
@@ -265,390 +359,202 @@ function randomBlink() {
   rightEye.style.transform =
     "scaleY(.08)";
 
+  setTimeout(() => {
+
+    updateEyesForState(
+      state
+    );
+
+  }, duration);
+}
+
+
+/* ========================================================
+   IDLE LIFE
+======================================================== */
+
+function idleLife() {
+
+  const delay =
+    1800 +
+    Math.random() * 4200;
 
   setTimeout(() => {
 
-    setEmotion(
-      currentEmotion
-    );
+    if (
+      !listening &&
+      !thinking &&
+      !speaking &&
+      !menuOpen
+    ) {
 
-  }, 130);
+      const choice =
+        Math.random();
 
-}
+      if (choice < .48) {
 
+        blink(
+          100 + Math.random() * 80
+        );
 
-/* =========================================================
-   RANDOM PERSONALITY
-========================================================= */
+      } else if (choice < .7) {
 
-function personalityLoop() {
+        wanderEyes();
 
-  clearTimeout(
-    personalityTimer
-  );
+      } else if (choice < .86) {
 
+        curiousMoment();
 
-  const delay =
-    2500 +
-    Math.random() * 5000;
+      } else {
 
-
-  personalityTimer =
-    setTimeout(() => {
-
-      if (
-        !listening &&
-        !thinking &&
-        !speaking &&
-        !menuOpen
-      ) {
-
-        const roll =
-          Math.random();
-
-
-        if (roll < .35) {
-
-          randomBlink();
-
-        }
-
-        else if (roll < .55) {
-
-          lookAround();
-
-        }
-
-        else if (roll < .68) {
-
-          becomeCurious();
-
-        }
-
-        else if (roll < .78) {
-
-          sleepyMoment();
-
-        }
+        longBlink();
 
       }
+    }
 
+    idleLife();
 
-      personalityLoop();
-
-    }, delay);
-
+  }, delay);
 }
 
 
-function lookAround() {
+function wanderEyes() {
+
+  if (
+    listening ||
+    thinking
+  ) return;
 
   const x =
-    (Math.random() - .5) * 18;
+    (Math.random() - .5) * 20;
 
   const y =
-    (Math.random() - .5) * 12;
-
+    (Math.random() - .5) * 13;
 
   leftPupil.style.transform =
-    `translate(${x}px,${y}px)`;
+    `translate(${x}px, ${y}px)`;
 
   rightPupil.style.transform =
-    `translate(${x}px,${y}px)`;
-
+    `translate(${x}px, ${y}px)`;
 
   setTimeout(() => {
 
     leftPupil.style.transform = "";
-
     rightPupil.style.transform = "";
 
-  }, 1200);
-
+  }, 900);
 }
 
 
-function becomeCurious() {
+function curiousMoment() {
 
-  setEmotion(
-    "curious"
-  );
-
+  setState("curious");
 
   setTimeout(() => {
 
-    setEmotion(
-      "calm"
-    );
+    if (!listening && !thinking) {
 
-  }, 1100);
+      setState("idle");
+
+    }
+
+  }, 900);
+}
+
+
+function longBlink() {
+
+  blink(300);
 
 }
 
 
-function sleepyMoment() {
-
-  setEmotion(
-    "sleepy"
-  );
-
-
-  setTimeout(() => {
-
-    setEmotion(
-      "calm"
-    );
-
-  }, 1800);
-
-}
-
-
-/* =========================================================
-   SPEECH
-========================================================= */
-
-function say(
-  text
-) {
-
-  if (
-    !("speechSynthesis" in window)
-  ) {
-
-    return;
-
-  }
-
-
-  try {
-
-    speechSynthesis.cancel();
-
-
-    const utterance =
-      new SpeechSynthesisUtterance(
-        text
-      );
-
-
-    utterance.rate =
-      .98;
-
-    utterance.pitch =
-      1.05;
-
-    utterance.volume =
-      1;
-
-
-    utterance.onstart =
-      () => {
-
-        speaking = true;
-
-      };
-
-
-    utterance.onend =
-      () => {
-
-        speaking = false;
-
-        setEmotion(
-          "calm"
-        );
-
-      };
-
-
-    speechSynthesis.speak(
-      utterance
-    );
-
-  }
-
-  catch (
-    error
-  ) {
-
-    console.log(
-      "Speech error:",
-      error
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   DABSy MESSAGE
-========================================================= */
-
-function showDABSy(
-  message,
-  label = "DABSy"
-) {
-
-  status.textContent =
-    label;
-
-  speech.textContent =
-    message;
-
-}
-
-
-/* =========================================================
-   STARTUP
-========================================================= */
-
-showDABSy(
-  "Hello Swagat. I'm here.",
-  "DABSy"
-);
-
-
-setEmotion(
-  "calm"
-);
-
-
-personalityLoop();
-
-
-setTimeout(() => {
-
-  say(
-    "Hello Swagat. I'm here."
-  );
-
-}, 700);
-
-
-/* =========================================================
-   EYE FOLLOW
-========================================================= */
+/* ========================================================
+   POINTER GAZE
+======================================================== */
 
 document.addEventListener(
   "pointermove",
   event => {
 
     if (
-      thinking
+      listening ||
+      thinking ||
+      menuOpen
     ) return;
-
 
     const x =
       (event.clientX /
         window.innerWidth -
-        .5) * 15;
-
+        .5) * 17;
 
     const y =
       (event.clientY /
         window.innerHeight -
         .5) * 13;
 
-
     leftPupil.style.transform =
-      `translate(${x}px,${y}px)`;
+      `translate(${x}px, ${y}px)`;
 
     rightPupil.style.transform =
-      `translate(${x}px,${y}px)`;
-
+      `translate(${x}px, ${y}px)`;
   }
 );
 
 
-/* =========================================================
-   FACE TAP SYSTEM
-========================================================= */
-
-face.addEventListener(
-  "pointerup",
-  event => {
-
-    const now =
-      Date.now();
-
-
-    const difference =
-      now - lastTap;
-
-
-    if (
-      difference < 320
-    ) {
-
-      clearTimeout(
-        tapTimer
-      );
-
-
-      lastTap = 0;
-
-
-      toggleMenu();
-
-
-    }
-
-    else {
-
-      lastTap =
-        now;
-
-
-      clearTimeout(
-        tapTimer
-      );
-
-
-      tapTimer =
-        setTimeout(() => {
-
-          lastTap = 0;
-
-          startListening();
-
-        }, 330);
-
-    }
-
-  }
-);
-
-
-/* =========================================================
+/* ========================================================
    MENU
-========================================================= */
+======================================================== */
 
-function toggleMenu() {
+function openMenu() {
 
-  menuOpen =
-    !menuOpen;
+  menuOpen = true;
 
-
-  document.body.classList.toggle(
-    "menu-open",
-    menuOpen
+  document.body.classList.add(
+    "menu-open"
   );
 
+  bubbleMenu.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  setState("curious");
 }
 
 
 function closeMenu() {
 
-  menuOpen =
-    false;
-
+  menuOpen = false;
 
   document.body.classList.remove(
     "menu-open"
   );
 
+  bubbleMenu.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  if (!listening && !thinking) {
+
+    setState("idle");
+
+  }
+}
+
+
+function toggleMenu() {
+
+  if (menuOpen) {
+
+    closeMenu();
+
+  } else {
+
+    openMenu();
+
+  }
 }
 
 
@@ -658,17 +564,691 @@ closeMenuButton.addEventListener(
 );
 
 
-/* =========================================================
-   SETTINGS
-========================================================= */
+/* ========================================================
+   FACE TAP / DOUBLE TAP
+======================================================== */
 
-settingsButton.addEventListener(
+face.addEventListener(
+  "pointerup",
+  event => {
+
+    if (
+      event.target.closest(
+        "button"
+      )
+    ) {
+
+      return;
+    }
+
+    const now =
+      Date.now();
+
+    const difference =
+      now - lastTap;
+
+    if (
+      difference > 0 &&
+      difference < 320
+    ) {
+
+      clearTimeout(
+        tapTimer
+      );
+
+      lastTap = 0;
+
+      toggleMenu();
+
+      return;
+    }
+
+    lastTap = now;
+
+    clearTimeout(
+      tapTimer
+    );
+
+    tapTimer =
+      setTimeout(() => {
+
+        lastTap = 0;
+
+        startListening();
+
+      }, 330);
+
+  }
+);
+
+
+/* ========================================================
+   PETTING
+======================================================== */
+
+face.addEventListener(
+  "pointerdown",
+  () => {
+
+    pointerDown = true;
+
+  }
+);
+
+
+face.addEventListener(
+  "pointermove",
+  event => {
+
+    if (
+      !pointerDown ||
+      menuOpen
+    ) return;
+
+    if (
+      !petTimer
+    ) {
+
+      petTimer =
+        setTimeout(() => {
+
+          petTimer = null;
+
+          petDABSy();
+
+        }, 350);
+    }
+  }
+);
+
+
+window.addEventListener(
+  "pointerup",
+  () => {
+
+    pointerDown = false;
+
+    clearTimeout(
+      petTimer
+    );
+
+    petTimer = null;
+
+  }
+);
+
+
+function petDABSy() {
+
+  if (
+    listening ||
+    thinking
+  ) return;
+
+  setState("happy");
+
+  showMessage(
+    "Hehe. That tickles.",
+    "DABSy"
+  );
+
+  showHeart();
+
+  setTimeout(() => {
+
+    if (!listening && !thinking) {
+
+      setState("idle");
+
+    }
+
+  }, 900);
+}
+
+
+function showHeart() {
+
+  heart.classList.remove(
+    "pop"
+  );
+
+  void heart.offsetWidth;
+
+  heart.classList.add(
+    "pop"
+  );
+}
+
+
+/* ========================================================
+   MICROPHONE
+======================================================== */
+
+function createRecognition() {
+
+  const Recognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!Recognition) {
+
+    return null;
+  }
+
+  const r =
+    new Recognition();
+
+  r.lang = "en-IN";
+
+  r.continuous = false;
+
+  r.interimResults = true;
+
+  r.maxAlternatives = 1;
+
+
+  r.onstart = () => {
+
+    listening = true;
+
+    face.classList.add(
+      "active",
+      "showSpeech"
+    );
+
+    setState("listening");
+
+    showMessage(
+      "I'm listening...",
+      "Listening",
+      false
+    );
+  };
+
+
+  r.onresult = event => {
+
+    let finalText = "";
+    let interimText = "";
+
+    for (
+      let i = event.resultIndex;
+      i < event.results.length;
+      i++
+    ) {
+
+      const result =
+        event.results[i];
+
+      if (
+        result.isFinal
+      ) {
+
+        finalText +=
+          result[0].transcript;
+
+      } else {
+
+        interimText +=
+          result[0].transcript;
+      }
+    }
+
+    const visible =
+      finalText ||
+      interimText;
+
+    if (visible) {
+
+      speechEl.textContent =
+        visible;
+    }
+
+    if (finalText.trim()) {
+
+      askDABSy(
+        finalText.trim()
+      );
+    }
+  };
+
+
+  r.onerror = event => {
+
+    listening = false;
+
+    face.classList.remove(
+      "active"
+    );
+
+    console.log(
+      "Speech recognition:",
+      event.error
+    );
+
+    if (
+      event.error ===
+      "not-allowed"
+    ) {
+
+      showMessage(
+        "Microphone permission is needed.",
+        "Microphone"
+      );
+
+      speak(
+        "I need microphone permission."
+      );
+
+    } else if (
+      event.error !==
+      "aborted"
+    ) {
+
+      showMessage(
+        "I didn't catch that.",
+        "Ready"
+      );
+    }
+
+    setState("idle");
+  };
+
+
+  r.onend = () => {
+
+    listening = false;
+
+    face.classList.remove(
+      "active"
+    );
+
+    if (
+      !thinking &&
+      !speaking
+    ) {
+
+      setState("idle");
+    }
+  };
+
+
+  return r;
+}
+
+
+recognition =
+  createRecognition();
+
+
+function startListening() {
+
+  if (
+    listening ||
+    thinking
+  ) return;
+
+  if (!recognition) {
+
+    showMessage(
+      "Voice isn't supported here. Try Chrome.",
+      "Voice"
+    );
+
+    speak(
+      "Voice isn't supported here. Try Chrome."
+    );
+
+    return;
+  }
+
+  try {
+
+    recognition.start();
+
+  } catch (error) {
+
+    console.log(
+      "Recognition start:",
+      error
+    );
+  }
+}
+
+
+/* ========================================================
+   AI
+======================================================== */
+
+async function askDABSy(
+  message
+) {
+
+  if (!message) return;
+
+  listening = false;
+  thinking = true;
+
+  face.classList.remove(
+    "active"
+  );
+
+  face.classList.add(
+    "showSpeech"
+  );
+
+  setState("thinking");
+
+  showMessage(
+    "Thinking...",
+    studyMode
+      ? "Study Mode"
+      : "DABSy",
+    false
+  );
+
+
+  try {
+
+    const controller =
+      new AbortController();
+
+    const timeout =
+      setTimeout(
+        () => controller.abort(),
+        30000
+      );
+
+
+    const response =
+      await fetch(
+        WORKER_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            message,
+            studyMode
+          }),
+
+          signal:
+            controller.signal
+        }
+      );
+
+
+    clearTimeout(
+      timeout
+    );
+
+
+    let data;
+
+    try {
+
+      data =
+        await response.json();
+
+    } catch {
+
+      throw new Error(
+        "The AI server returned an invalid response."
+      );
+    }
+
+
+    if (
+      !response.ok ||
+      data.ok === false
+    ) {
+
+      throw new Error(
+        data.error ||
+        `AI server returned ${response.status}`
+      );
+    }
+
+
+    thinking = false;
+
+
+    const answer =
+      data.answer ||
+      data.spoken ||
+      "I'm here, but I don't have an answer yet.";
+
+
+    const spoken =
+      data.spoken ||
+      answer;
+
+
+    const emotion =
+      typeof data.emotion === "string"
+        ? data.emotion
+        : "calm";
+
+
+    setState(
+      validEmotion(
+        emotion
+      )
+        ? emotion
+        : "calm"
+    );
+
+
+    showMessage(
+      spoken,
+      studyMode
+        ? "Study Mode"
+        : "DABSy",
+      false
+    );
+
+
+    showAnswer(
+      message,
+      answer
+    );
+
+
+    speak(
+      spoken
+    );
+
+  }
+
+  catch (error) {
+
+    thinking = false;
+
+    console.error(
+      "DABSy Worker error:",
+      error
+    );
+
+
+    setState(
+      "confused"
+    );
+
+
+    let messageText =
+      "I can't reach my AI brain right now.";
+
+
+    if (
+      error.name ===
+      "AbortError"
+    ) {
+
+      messageText =
+        "My AI brain took too long to answer.";
+
+    } else if (
+      error.message &&
+      error.message.includes(
+        "Failed to fetch"
+      )
+    ) {
+
+      messageText =
+        "I can't reach my private AI server.";
+
+    }
+
+
+    showMessage(
+      messageText,
+      "Connection",
+      false
+    );
+
+
+    setTimeout(() => {
+
+      if (!speaking) {
+
+        setState("idle");
+
+      }
+
+    }, 1600);
+
+  }
+}
+
+
+function validEmotion(
+  emotion
+) {
+
+  return [
+    "idle",
+    "curious",
+    "listening",
+    "thinking",
+    "speaking",
+    "happy",
+    "excited",
+    "confused",
+    "sleepy",
+    "dizzy"
+  ].includes(
+    emotion
+  );
+}
+
+
+/* ========================================================
+   ANSWER PANEL
+======================================================== */
+
+function showAnswer(
+  question,
+  answer
+) {
+
+  answerTitle.textContent =
+    studyMode
+      ? "📚 Study Mode"
+      : "DABSy";
+
+
+  answerContent.replaceChildren();
+
+
+  const questionBlock =
+    document.createElement(
+      "div"
+    );
+
+  questionBlock.className =
+    "answerStep";
+
+
+  const questionTitle =
+    document.createElement(
+      "strong"
+    );
+
+  questionTitle.textContent =
+    "You said";
+
+
+  const questionText =
+    document.createElement(
+      "div"
+    );
+
+  questionText.textContent =
+    question;
+
+
+  questionBlock.append(
+    questionTitle,
+    questionText
+  );
+
+
+  const answerBlock =
+    document.createElement(
+      "div"
+    );
+
+  answerBlock.className =
+    "answerStep";
+
+
+  const answerTitleEl =
+    document.createElement(
+      "strong"
+    );
+
+  answerTitleEl.textContent =
+    studyMode
+      ? "Let's understand it"
+      : "DABSy says";
+
+
+  const answerText =
+    document.createElement(
+      "div"
+    );
+
+  answerText.textContent =
+    answer;
+
+
+  answerBlock.append(
+    answerTitleEl,
+    answerText
+  );
+
+
+  answerContent.append(
+    questionBlock,
+    answerBlock
+  );
+
+
+  answerPanel.classList.add(
+    "open"
+  );
+}
+
+
+closeAnswer.addEventListener(
   "click",
   () => {
 
-    closeMenu();
-
-    settingsOverlay.classList.add(
+    answerPanel.classList.remove(
       "open"
     );
 
@@ -676,21 +1256,9 @@ settingsButton.addEventListener(
 );
 
 
-closeSettings.addEventListener(
-  "click",
-  () => {
-
-    settingsOverlay.classList.remove(
-      "open"
-    );
-
-  }
-);
-
-
-/* =========================================================
+/* ========================================================
    STUDY
-========================================================= */
+======================================================== */
 
 studyButton.addEventListener(
   "click",
@@ -729,34 +1297,27 @@ document
         "click",
         () => {
 
-          const topic =
+          studyMode = true;
+
+          const subject =
             button.dataset.topic;
-
-
-          studyMode =
-            true;
-
 
           studyOverlay.classList.remove(
             "open"
           );
 
-
-          setEmotion(
+          setState(
             "excited"
           );
 
-
-          showDABSy(
-            `Ready for ${topic}. Tell me what you're stuck on.`,
+          showMessage(
+            `${subject} mode ready. Tell me what you're working on.`,
             "Study Mode"
           );
 
-
-          say(
-            `Ready for ${topic}. Tell me what you're stuck on.`
+          speak(
+            `${subject} mode ready. Tell me what you're working on.`
           );
-
 
           setTimeout(
             startListening,
@@ -774,12 +1335,11 @@ studyTalkButton.addEventListener(
   "click",
   () => {
 
+    studyMode = true;
+
     studyOverlay.classList.remove(
       "open"
     );
-
-    studyMode =
-      true;
 
     startListening();
 
@@ -787,562 +1347,17 @@ studyTalkButton.addEventListener(
 );
 
 
-/* =========================================================
-   MICROPHONE
-========================================================= */
-
-function createRecognition() {
-
-  const SpeechRecognition =
-    window.SpeechRecognition ||
-    window.webkitSpeechRecognition;
-
-
-  if (
-    !SpeechRecognition
-  ) {
-
-    return null;
-
-  }
-
-
-  const r =
-    new SpeechRecognition();
-
-
-  r.lang =
-    "en-IN";
-
-
-  r.continuous =
-    false;
-
-
-  r.interimResults =
-    true;
-
-
-  r.maxAlternatives =
-    1;
-
-
-  r.onstart =
-    () => {
-
-      listening =
-        true;
-
-
-      document.body.classList.add(
-        "listening"
-      );
-
-
-      setEmotion(
-        "curious"
-      );
-
-
-      showDABSy(
-        "I'm listening...",
-        "Listening"
-      );
-
-    };
-
-
-  r.onresult =
-    event => {
-
-      let finalText =
-        "";
-
-
-      let interimText =
-        "";
-
-
-      for (
-        let i =
-          event.resultIndex;
-
-        i <
-          event.results.length;
-
-        i++
-      ) {
-
-        const result =
-          event.results[i];
-
-
-        if (
-          result.isFinal
-        ) {
-
-          finalText +=
-            result[0]
-              .transcript;
-
-        }
-
-        else {
-
-          interimText +=
-            result[0]
-              .transcript;
-
-        }
-
-      }
-
-
-      const visible =
-        finalText ||
-        interimText;
-
-
-      if (
-        visible
-      ) {
-
-        speech.textContent =
-          visible;
-
-      }
-
-
-      if (
-        finalText
-      ) {
-
-        askDABSy(
-          finalText.trim()
-        );
-
-      }
-
-    };
-
-
-  r.onerror =
-    error => {
-
-      listening =
-        false;
-
-
-      document.body.classList.remove(
-        "listening"
-      );
-
-
-      console.log(
-        "Microphone:",
-        error
-      );
-
-
-      if (
-        error.error ===
-        "not-allowed"
-      ) {
-
-        showDABSy(
-          "I need microphone permission.",
-          "Microphone"
-        );
-
-
-        say(
-          "I need microphone permission."
-        );
-
-      }
-
-      else {
-
-        showDABSy(
-          "I didn't catch that.",
-          "Ready"
-        );
-
-      }
-
-    };
-
-
-  r.onend =
-    () => {
-
-      listening =
-        false;
-
-
-      document.body.classList.remove(
-        "listening"
-      );
-
-    };
-
-
-  return r;
-
-}
-
-
-recognition =
-  createRecognition();
-
-
-/* =========================================================
-   START LISTENING
-========================================================= */
-
-function startListening() {
-
-  if (
-    thinking ||
-    listening
-  ) return;
-
-
-  if (
-    !recognition
-  ) {
-
-    showDABSy(
-      "Voice isn't supported here. Try Chrome.",
-      "Voice"
-    );
-
-
-    return;
-
-  }
-
-
-  try {
-
-    recognition.start();
-
-  }
-
-  catch (
-    error
-  ) {
-
-    console.log(
-      error
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   TALK TO PRIVATE WORKER
-========================================================= */
-
-async function askDABSy(
-  message
-) {
-
-  if (
-    !message
-  ) return;
-
-
-  thinking =
-    true;
-
-
-  document.body.classList.remove(
-    "listening"
-  );
-
-
-  document.body.classList.add(
-    "thinking"
-  );
-
-
-  setEmotion(
-    "thinking"
-  );
-
-
-  showDABSy(
-    "Hmm... let me think.",
-    studyMode
-      ? "Study Mode"
-      : "Thinking"
-  );
-
-
-  try {
-
-    const response =
-      await fetch(
-        WORKER_URL,
-        {
-
-          method:
-            "POST",
-
-          headers: {
-
-            "Content-Type":
-              "application/json"
-
-          },
-
-          body:
-            JSON.stringify({
-
-              message:
-                message,
-
-              studyMode:
-                studyMode
-
-            })
-
-        }
-      );
-
-
-    const data =
-      await response.json();
-
-
-    if (
-      !response.ok ||
-      !data.ok
-    ) {
-
-      throw new Error(
-        data.error ||
-        "Worker request failed."
-      );
-
-    }
-
-
-    thinking =
-      false;
-
-
-    document.body.classList.remove(
-      "thinking"
-    );
-
-
-    setEmotion(
-      data.emotion ||
-      "calm"
-    );
-
-
-    showDABSy(
-      data.spoken ||
-      "I've got something for you.",
-      studyMode
-        ? "Study Mode"
-        : "DABSy"
-    );
-
-
-    say(
-      data.spoken ||
-      data.answer ||
-      "I've got something for you."
-    );
-
-
-    showAnswer(
-      message,
-      data.answer ||
-      data.spoken ||
-      ""
-    );
-
-
-  }
-
-  catch (
-    error
-  ) {
-
-    console.error(
-      "DABSy AI:",
-      error
-    );
-
-
-    thinking =
-      false;
-
-
-    document.body.classList.remove(
-      "thinking"
-    );
-
-
-    setEmotion(
-      "confused"
-    );
-
-
-    showDABSy(
-      "My brain connection hiccupped. Try me again.",
-      "Connection"
-    );
-
-
-    say(
-      "My brain connection hiccupped. Try me again."
-    );
-
-
-    setTimeout(() => {
-
-      setEmotion(
-        "calm"
-      );
-
-    }, 1600);
-
-  }
-
-}
-
-
-/* =========================================================
-   ANSWER
-========================================================= */
-
-function showAnswer(
-  question,
-  answer
-) {
-
-  answerTitle.textContent =
-    studyMode
-      ? "📚 Study Mode"
-      : "DABSy";
-
-
-  answerContent.innerHTML =
-    "";
-
-
-  const q =
-    document.createElement(
-      "div"
-    );
-
-
-  q.className =
-    "answerStep";
-
-
-  const qTitle =
-    document.createElement(
-      "strong"
-    );
-
-
-  qTitle.textContent =
-    "You said";
-
-
-  const qText =
-    document.createElement(
-      "div"
-    );
-
-
-  qText.textContent =
-    question;
-
-
-  q.appendChild(
-    qTitle
-  );
-
-
-  q.appendChild(
-    qText
-  );
-
-
-  const a =
-    document.createElement(
-      "div"
-    );
-
-
-  a.className =
-    "answerStep";
-
-
-  const aTitle =
-    document.createElement(
-      "strong"
-    );
-
-
-  aTitle.textContent =
-    studyMode
-      ? "Let's understand it"
-      : "DABSy says";
-
-
-  const aText =
-    document.createElement(
-      "div"
-    );
-
-
-  aText.textContent =
-    answer;
-
-
-  a.appendChild(
-    aTitle
-  );
-
-
-  a.appendChild(
-    aText
-  );
-
-
-  answerContent.appendChild(
-    q
-  );
-
-
-  answerContent.appendChild(
-    a
-  );
-
-
-  answerPanel.classList.add(
-    "open"
-  );
-
-}
-
-
-closeAnswer.addEventListener(
+/* ========================================================
+   SETTINGS
+======================================================== */
+
+settingsButton.addEventListener(
   "click",
   () => {
 
-    answerPanel.classList.remove(
+    closeMenu();
+
+    settingsOverlay.classList.add(
       "open"
     );
 
@@ -1350,248 +1365,70 @@ closeAnswer.addEventListener(
 );
 
 
-/* =========================================================
-   PETTING
-========================================================= */
-
-face.addEventListener(
-  "pointermove",
-  event => {
-
-    if (
-      event.buttons !== 1
-    ) return;
-
-
-    if (
-      petCooldown
-    ) return;
-
-
-    petCooldown =
-      true;
-
-
-    showHeart(
-      event.clientX,
-      event.clientY
-    );
-
-
-    setEmotion(
-      "happy"
-    );
-
-
-    showDABSy(
-      "Hehe...",
-      "DABSy"
-    );
-
-
-    setTimeout(
-      () => {
-
-        setEmotion(
-          "calm"
-        );
-
-        petCooldown =
-          false;
-
-      },
-      650
-    );
-
-  }
-);
-
-
-/* =========================================================
-   HEART
-========================================================= */
-
-function showHeart(
-  x,
-  y
-) {
-
-  heart.style.left =
-    `${x - 10}px`;
-
-  heart.style.top =
-    `${y - 10}px`;
-
-
-  heart.classList.remove(
-    "pop"
-  );
-
-
-  void heart.offsetWidth;
-
-
-  heart.classList.add(
-    "pop"
-  );
-
-}
-
-
-/* =========================================================
-   SHAKE
-========================================================= */
-
-if (
-  "DeviceMotionEvent"
-  in window
-) {
-
-  window.addEventListener(
-    "devicemotion",
-    event => {
-
-      const a =
-        event.accelerationIncludingGravity;
-
-
-      if (
-        !a
-      ) return;
-
-
-      const x =
-        a.x || 0;
-
-      const y =
-        a.y || 0;
-
-      const z =
-        a.z || 0;
-
-
-      const force =
-        Math.sqrt(
-          x*x +
-          y*y +
-          z*z
-        );
-
-
-      const now =
-        Date.now();
-
-
-      if (
-        force > 20 &&
-        now - lastShake > 1000
-      ) {
-
-        lastShake =
-          now;
-
-
-        shakeReaction();
-
-      }
-
-    }
-  );
-
-}
-
-
-function shakeReaction() {
-
-  document.body.classList.remove(
-    "shaken"
-  );
-
-
-  void document.body.offsetWidth;
-
-
-  document.body.classList.add(
-    "shaken"
-  );
-
-
-  setEmotion(
-    "confused"
-  );
-
-
-  showDABSy(
-    "WHOA! 🫨",
-    "DABSy"
-  );
-
-
-  say(
-    "Whoa!"
-  );
-
-
-  setTimeout(() => {
-
-    showDABSy(
-      "Okay... I'm good. 😵‍💫",
-      "DABSy"
-    );
-
-
-    setEmotion(
-      "calm"
-    );
-
-  }, 1000);
-
-}
-
-
-/* =========================================================
-   CLEANUP
-========================================================= */
-
-window.addEventListener(
-  "visibilitychange",
+closeSettings.addEventListener(
+  "click",
   () => {
 
-    if (
-      document.hidden
-    ) {
-
-      if (
-        "speechSynthesis"
-        in window
-      ) {
-
-        speechSynthesis.cancel();
-
-      }
-
-    }
+    settingsOverlay.classList.remove(
+      "open"
+    );
 
   }
 );
 
 
-/* =========================================================
-   DEBUG
-========================================================= */
+testConnection.addEventListener(
+  "click",
+  async () => {
 
-window.DABSy = {
+    settingStatus.textContent =
+      "Testing...";
 
-  listen:
-    startListening,
+    setState(
+      "thinking"
+    );
 
-  ask:
-    askDABSy,
 
-  shake:
-    shakeReaction,
+    try {
 
-  menu:
-    toggleMenu
+      const response =
+        await fetch(
+          WORKER_URL,
+          {
+            method: "GET",
+            cache: "no-store"
+          }
+        );
 
-};
+
+      if (!response.ok) {
+
+        throw new Error(
+          `Server returned ${response.status}`
+        );
+      }
+
+
+      settingStatus.textContent =
+        "✓ DABSy's private backend is online.";
+
+      setState(
+        "happy"
+      );
+
+    } catch (error) {
+
+      settingStatus.textContent =
+        "✕ The private backend could not be reached.";
+
+      setState(
+        "confused"
+      );
+
+    }
+
+
+    setTimeout(() => {
+
+      setState(
+        "
