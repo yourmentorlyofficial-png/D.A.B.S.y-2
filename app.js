@@ -79,7 +79,7 @@ function setMood(mood, status, dialogue) {
   } else if (mood === 'thinking') {
     leftEye.style.background = 'var(--success)';
     rightEye.style.background = 'var(--success)';
-    rightEye.style.transform = 'scale(1.15)';
+    leftEye.style.transform = 'scale(1.15)';
     mouthSmile.style.width = '20px';
     mouthSmile.style.borderColor = 'var(--success)';
     ambientAura.style.background = 'rgba(16, 185, 129, 0.5)';
@@ -110,7 +110,6 @@ function exitCornerMode() {
 
 panelCloseBtn.addEventListener('click', exitCornerMode);
 
-// Custom In-App Modal Controller (Replaces blocked mobile prompts)
 function showModal(title, subtitle, placeholder, callback) {
   modalTitle.textContent = title;
   modalSubtitle.textContent = subtitle;
@@ -136,11 +135,10 @@ modalInputField.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') modalSubmitBtn.click();
 });
 
-// Settings Button
 settingsBtn.addEventListener('click', () => {
   showModal(
     'Gemini API Settings',
-    'Enter your Google Gemini API Key (saved securely in your browser):',
+    'Enter your Google Gemini API Key (stored securely in your browser):',
     'Paste API Key here...',
     (newKey) => {
       if (newKey) {
@@ -156,7 +154,6 @@ settingsBtn.addEventListener('click', () => {
   );
 });
 
-// Talk Button Trigger
 function triggerInputFlow() {
   if (!geminiApiKey) {
     showModal(
@@ -167,7 +164,7 @@ function triggerInputFlow() {
         if (key) {
           geminiApiKey = key;
           localStorage.setItem('dabsy_gemini_key', geminiApiKey);
-          triggerInputFlow(); // Continue flow after saving
+          triggerInputFlow();
         } else {
           alert('API Key is required.');
         }
@@ -179,7 +176,7 @@ function triggerInputFlow() {
   showModal(
     'Talk to DABSy',
     'Ask any Class 11 Physics, Chemistry, Math, or Biology question:',
-    'e.g. Derive kinematic equations...',
+    'e.g. Explain quantum physics...',
     (query) => {
       if (query) {
         processWithGemini(query.toLowerCase());
@@ -190,7 +187,6 @@ function triggerInputFlow() {
 
 talkBtn.addEventListener('click', triggerInputFlow);
 
-// --- AI BRAIN INTEGRATION ---
 async function processWithGemini(userPrompt) {
   if (userPrompt.includes("i'm done") || userPrompt.includes("im done") || userPrompt.includes("done") || userPrompt.includes("close")) {
     exitCornerMode();
