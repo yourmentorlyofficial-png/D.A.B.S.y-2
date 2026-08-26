@@ -1,34 +1,202 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+  >
+
+  <meta name="theme-color" content="#000000">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
   <title>DABSy</title>
+
+  <link rel="manifest" href="./manifest.json">
   <link rel="stylesheet" href="./styles.css">
 </head>
+
 <body>
-  <div class="stage">
-    <div class="face-container" id="faceContainer">
-      <div class="eyes-row">
-        <div class="eye" id="leftEye"><div class="eye-dot"></div></div>
-        <div class="eye" id="rightEye"><div class="eye-dot"></div></div>
+
+  <main id="app">
+
+    <!-- THE ENTIRE PET FACE -->
+    <section id="face" aria-label="DABSy">
+
+      <div id="eyes">
+        <div class="eye" id="leftEye">
+          <div class="pupil"></div>
+        </div>
+
+        <div class="eye" id="rightEye">
+          <div class="pupil"></div>
+        </div>
       </div>
-      
-      <div class="companion-dialogue-box">
-        <div class="companion-status-text" id="companionStatus" title="Tap to configure API key">DABSy Online</div>
-        <div class="companion-speech" id="companionSpeech" title="Tap to talk">Hello Swagat, how can I help you today?</div>
+
+      <!-- Speech appears only when DABSy needs it -->
+      <div id="speechArea">
+        <div id="status"></div>
+        <div id="speech"></div>
       </div>
+
+      <!-- Tiny hint -->
+      <div id="hint">
+        tap to talk&nbsp;&nbsp;•&nbsp;&nbsp;double-tap for DABSy
+      </div>
+
+    </section>
+
+
+    <!-- FLOATING MENU -->
+
+    <div id="bubbleMenu">
+
+      <button class="bubble studyBubble" id="studyButton">
+        <span>📚</span>
+        <small>Study</small>
+      </button>
+
+      <button class="bubble settingsBubble" id="settingsButton">
+        <span>⚙</span>
+        <small>Settings</small>
+      </button>
+
+      <button class="bubble closeBubble" id="closeMenuButton">
+        <span>×</span>
+      </button>
+
     </div>
 
-    <div class="presentation-panel" id="presentationPanel">
-      <div class="panel-header">
-        <span class="panel-title" id="panelTitle">Study Breakdown</span>
-        <button class="panel-close-btn" id="panelCloseBtn">✕</button>
+
+    <!-- SETTINGS -->
+
+    <div class="overlay" id="settingsOverlay">
+
+      <div class="glassSheet">
+
+        <div class="sheetHeader">
+          <h2>DABSy</h2>
+
+          <button id="closeSettings">×</button>
+        </div>
+
+        <p class="sheetDescription">
+          Connect DABSy to Gemini so it can think, explain and help you study.
+        </p>
+
+        <label for="apiKey">
+          Gemini API key
+        </label>
+
+        <input
+          id="apiKey"
+          type="password"
+          placeholder="Paste your Gemini API key"
+          autocomplete="off"
+        >
+
+        <button class="primaryButton" id="saveApiKey">
+          Save key
+        </button>
+
+        <button class="secondaryButton" id="forgetApiKey">
+          Forget saved key
+        </button>
+
+        <div class="settingStatus" id="settingStatus"></div>
+
       </div>
-      <div id="panelContentArea" style="display: flex; flex-direction: column; gap: 12px;"></div>
+
     </div>
-  </div>
+
+
+    <!-- STUDY MODE -->
+
+    <div class="overlay" id="studyOverlay">
+
+      <div class="glassSheet studySheet">
+
+        <div class="sheetHeader">
+
+          <h2>Study Mode</h2>
+
+          <button id="closeStudy">×</button>
+
+        </div>
+
+        <p class="sheetDescription">
+          Tell DABSy what you want to study. You can speak naturally.
+        </p>
+
+        <div class="studyOptions">
+
+          <button class="studyOption" data-topic="Physics">
+            <span>⚛️</span>
+            <strong>Physics</strong>
+          </button>
+
+          <button class="studyOption" data-topic="Chemistry">
+            <span>🧪</span>
+            <strong>Chemistry</strong>
+          </button>
+
+          <button class="studyOption" data-topic="Mathematics">
+            <span>📐</span>
+            <strong>Maths</strong>
+          </button>
+
+          <button class="studyOption" data-topic="Biology">
+            <span>🧬</span>
+            <strong>Biology</strong>
+          </button>
+
+        </div>
+
+        <button class="primaryButton" id="studyTalkButton">
+          🎙️ Talk to DABSy
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- AI ANSWER -->
+
+    <div id="answerPanel">
+
+      <div id="answerHeader">
+
+        <span id="answerTitle">
+          DABSy
+        </span>
+
+        <button id="closeAnswer">
+          ×
+        </button>
+
+      </div>
+
+      <div id="answerContent"></div>
+
+    </div>
+
+
+    <!-- LISTENING EFFECT -->
+
+    <div id="listeningGlow"></div>
+
+    <!-- PETTING HEART -->
+
+    <div id="heart">
+      ♥
+    </div>
+
+  </main>
 
   <script type="module" src="./app.js"></script>
+
 </body>
 </html>
