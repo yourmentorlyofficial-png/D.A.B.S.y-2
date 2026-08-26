@@ -19,6 +19,19 @@
     <button id="installBtn">Install</button>
   </div>
 
+  <!-- Sleek In-App Input Modal (Replaces blocked mobile prompts) -->
+  <div class="input-modal-overlay" id="inputModal">
+    <div class="input-modal-card">
+      <h3 id="modalTitle" style="color: var(--accent); margin-bottom: 8px; font-size: 1rem;">Ask DABSy</h3>
+      <p id="modalSubtitle" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Type your question or command below:</p>
+      <input type="text" id="modalInputField" placeholder="e.g. Explain quantum physics..." autocomplete="off">
+      <div style="display: flex; gap: 10px; margin-top: 14px;">
+        <button class="action-pill primary" id="modalSubmitBtn" style="flex: 1; justify-content: center;">Submit</button>
+        <button class="action-pill" id="modalCancelBtn" style="flex: 1; justify-content: center;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <div class="stage">
     <div class="face-container" id="faceContainer" title="Tap to interact">
       <div class="face-features">
@@ -48,12 +61,53 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
         <span id="talkBtnText">Talk to DABSy</span>
       </button>
-      <button class="action-pill" id="modeToggleBtn" title="Switch Mode">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="15" x2="15.01" y1="9" y2="9"/><line x1="9" x2="9.01" y1="9" y2="9"/></svg>
-        <span id="modeNameDisplay">Fun Mode</span>
+      <button class="icon-btn" id="settingsBtn" title="Gemini API Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1.45 1.92l-.41.11a2 2 0 0 0-1.15 2.52l.1.27a2 2 0 0 1-.1 1.98l-.21.36a2 2 0 0 0 .25 2.45l.18.15a2 2 0 0 1 1.05 1.75v.2a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1.45-1.92l.41-.11a2 2 0 0 0 1.15-2.52l-.1-.27a2 2 0 0 1 .1-1.98l.21-.36a2 2 0 0 0-.25-2.45l-.18-.15a2 2 0 0 1-1.05-1.75v-.2a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
       </button>
     </div>
   </div>
+
+  <!-- Add modal CSS directly to styles or update styles.css. Let's include style patch or update styles.css -->
+  <style>
+    .input-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(3, 5, 10, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .input-modal-card {
+      background: var(--surface, #0c1220);
+      border: 1px solid var(--border, rgba(255,255,255,0.1));
+      padding: 24px;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      animation: modalFadeIn 0.3s ease;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .input-modal-card input {
+      width: 100%;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border, rgba(255,255,255,0.1));
+      border-radius: 14px;
+      padding: 12px 16px;
+      color: white;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .input-modal-card input:focus {
+      border-color: var(--accent, #06b6d4);
+    }
+  </style>
 
   <script type="module" src="./app.js"></script>
 </body>
